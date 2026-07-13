@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use ET\Builder\Packages\Module\Layout\Components\Style\Utils\Utils;
+use ET\Builder\Packages\Module\Options\TextEffects\TextEffectsStyle;
 use ET\Builder\Packages\Module\Options\TextShadow\TextShadowStyle;
 use ET\Builder\FrontEnd\Module\Fonts;
 use ET\Builder\Packages\ModuleUtils\ModuleUtils;
@@ -236,6 +237,32 @@ class FontStyle {
 				array_push( $children, ...$children_text_shadow );
 			} elseif ( $children_text_shadow ) {
 				$children .= $children_text_shadow;
+			}
+		}
+
+		if ( ! empty( $attr['textEffects'] ) ) {
+			$children_text_effects = TextEffectsStyle::style(
+				[
+					'selector'                => $selector,
+					'selectors'               => $selectors,
+					'propertySelectors'       => $property_selectors['textEffects'] ?? [],
+					'selectorFunction'        => $selector_function,
+					'attr'                    => $attr['textEffects'],
+					'defaultPrintedStyleAttr' => $args['defaultPrintedStyleAttr']['textEffects'] ?? [],
+					'asStyle'                 => false,
+					'important'               => is_bool( $important ) ? $important : ( $important['textEffects'] ?? false ),
+					'orderClass'              => $order_class,
+					'isInsideStickyModule'    => $is_inside_sticky_module,
+					'stickyParentOrderClass'  => $sticky_parent_order_class,
+					'returnType'              => $args['returnType'],
+					'atRules'                 => $at_rules,
+				]
+			);
+
+			if ( $children_text_effects && $return_as_array ) {
+				array_push( $children, ...$children_text_effects );
+			} elseif ( $children_text_effects ) {
+				$children .= $children_text_effects;
 			}
 		}
 

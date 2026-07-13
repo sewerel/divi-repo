@@ -318,6 +318,7 @@
               "desktop": {
                 "value": {
                   "color": true,
+                  "font-weight": true,
                   "line-height": true
                 }
               }

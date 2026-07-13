@@ -36,10 +36,10 @@ class BackgroundPresetAttrsMap {
 				'preset'   => [ 'style' ],
 				'subName'  => 'color',
 			],
-			"{$attr_name}__gradient.stops"             => [
+			"{$attr_name}__gradient"                   => [
 				'attrName' => $attr_name,
 				'preset'   => [ 'style', 'html' ],
-				'subName'  => 'gradient.stops',
+				'subName'  => 'gradient',
 			],
 			"{$attr_name}__gradient.enabled"           => [
 				'attrName' => $attr_name,

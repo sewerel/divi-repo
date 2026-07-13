@@ -386,7 +386,6 @@ class CompatibilityChecks {
 		return ( 'yes' === $nonconvertible ) || ! empty( $unknown_attributes );
 	}
 
-
 	/**
 	 * Get the result list.
 	 *
@@ -398,8 +397,6 @@ class CompatibilityChecks {
 		// TODO fix(D5, D5 Readiness), use diff role.
 		et_core_security_check( 'edit_posts', 'et_d5_readiness_get_result_list', 'wp_nonce' );
 
-		Helpers\maybe_reset_modules_conversation_cache();
-
 		$post_type = isset( $_POST['post_type'] ) ? sanitize_text_field( $_POST['post_type'] ) : '';
 
 		if ( ! in_array( $post_type, PostTypes::get_post_type_slugs(), true ) ) {
@@ -408,11 +405,10 @@ class CompatibilityChecks {
 
 		self::initialze_modules_before_use();
 
-		$used_modules_names = self::_get_initial_used_modules_names();
-
 		$post_feature_check_manager = self::setup_post_feature_check_manager();
 
 		$use_meta = in_array( $post_type, et_builder_get_enabled_builder_post_types(), true );
+		$page     = isset( $_POST['page'] ) ? max( 1, (int) $_POST['page'] ) : 1;
 
 		// Build broader meta query to include all builder posts (converted and non-converted)
 		$base_meta_query = [];
@@ -437,9 +433,17 @@ class CompatibilityChecks {
 			}
 		}
 
+		Helpers\maybe_reset_modules_conversation_cache();
+
+		$used_modules_names = self::_get_initial_used_modules_names();
+
+		$posts_per_page = (int) apply_filters( 'et_d5_readiness_result_list_posts_per_page', 2000 );
+		$posts_per_page = max( 1, $posts_per_page );
+
 		$args = [
 			'post_type'      => $post_type,
-			'posts_per_page' => -1,
+			'posts_per_page' => $posts_per_page,
+			'paged'          => $page,
 			'order'          => 'ASC',
 			'post_status'    => 'any',
 			'meta_query'     => $base_meta_query,
@@ -477,7 +481,6 @@ class CompatibilityChecks {
 						// Don't include converted posts without newly convertible modules in results
 						continue;
 					}
-
 				} else {
 					// For non-converted posts, scan all modules
 					$used_modules_names = self::_get_used_modules_name_from_content( $post_content, $used_modules_names );
@@ -503,12 +506,24 @@ class CompatibilityChecks {
 				}
 			}
 
-			wp_reset_postdata(); // Reset after the loop.
+			wp_reset_postdata(); // Reset after each chunk.
 		}
 
 		Helpers\readiness_update_used_modules_names( $used_modules_names );
 
-		wp_send_json_success( $result_list );
+		$has_more  = $query->max_num_pages > $page;
+		$next_page = $has_more ? $page + 1 : $page;
+
+		wp_send_json_success(
+			[
+				'status'         => $has_more ? 'running' : 'complete',
+				'has_more'       => $has_more,
+				'next_page'      => $next_page,
+				'page'           => $page,
+				'posts_per_page' => $posts_per_page,
+				'result_list'    => $result_list,
+			]
+		);
 	}
 
 	/**

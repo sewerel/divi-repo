@@ -731,6 +731,7 @@ class WooCommerceCartTotalsModule implements DependencyInterface {
 		$settings                                   = $args['settings'] ?? [];
 		$order_class                                = $args['orderClass'] ?? '';
 		$style_group                                = $args['styleGroup'] ?? 'module';
+		$default_printed_style_attrs                = $args['defaultPrintedStyleAttrs'] ?? [];
 		$breakpoints_states_info                    = MultiViewUtils::get_breakpoints_states_info();
 		$default_breakpoint                         = $breakpoints_states_info->default_breakpoint();
 		$default_state                              = $breakpoints_states_info->default_state();
@@ -771,6 +772,7 @@ class WooCommerceCartTotalsModule implements DependencyInterface {
 		// for the button icon style declaration, preventing fallback to hard-coded padding.
 		$button_affecting_attrs = 'module' === $style_group ? [
 			'spacing' => array_replace_recursive(
+				$default_printed_style_attrs['button']['decoration']['spacing'] ?? [],
 				isset( $elements->preset_printed_style_attrs ) && is_array( $elements->preset_printed_style_attrs ) ? ( $elements->preset_printed_style_attrs['button']['decoration']['spacing'] ?? [] ) : [],
 				$attrs['button']['decoration']['spacing'] ?? []
 			),
@@ -897,6 +899,7 @@ class WooCommerceCartTotalsModule implements DependencyInterface {
 									return $decoration_attrs;
 								},
 							],
+							'isMergeRecursiveProps' => true,
 						]
 					),
 

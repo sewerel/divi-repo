@@ -161,7 +161,7 @@
     },
     "sidebar": {
       "type": "object",
-      "selector": "{{selector}}.et_pb_widget_area li, {{selector}}.et_pb_widget_area li:before, {{selector}}.et_pb_widget_area a",
+      "selector": "{{selector}}.et_pb_widget_area li, {{selector}}.et_pb_widget_area li:before, {{selector}}.et_pb_widget_area a, {{selector}}.et_pb_widget_area p, {{selector}}.et_pb_widget_area pre, {{selector}}.et_pb_widget_area code",
       "settings": {
         "innerContent": {
           "groupType": "group-items",
@@ -263,7 +263,7 @@
           "propertySelectors": {
             "desktop": {
               "value": {
-                "line-height": "{{selector}}.et_pb_widget_area p"
+                "line-height": "{{selector}}.et_pb_widget_area p, {{selector}}.et_pb_widget_area pre, {{selector}}.et_pb_widget_area code"
               }
             }
           },

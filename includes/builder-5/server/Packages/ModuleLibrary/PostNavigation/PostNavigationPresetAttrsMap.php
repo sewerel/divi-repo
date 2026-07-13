@@ -70,10 +70,10 @@ class PostNavigationPresetAttrsMap {
 				'preset'   => [ 'style' ],
 				'subName'  => 'color',
 			],
-			'links.decoration.background__gradient.stops'  => [
+			'links.decoration.background__gradient'        => [
 				'attrName' => 'links.decoration.background',
 				'preset'   => [ 'style', 'html' ],
-				'subName'  => 'gradient.stops',
+				'subName'  => 'gradient',
 			],
 			'links.decoration.background__gradient.enabled' => [
 				'attrName' => 'links.decoration.background',
@@ -323,7 +323,7 @@ class PostNavigationPresetAttrsMap {
 				'attrName' => 'module.meta.meta.forceVisible',
 				'preset'   => 'meta',
 			],
-			'module.meta.meta.tocListHeading'                => [
+			'module.meta.meta.tocListHeading'              => [
 				'attrName' => 'module.meta.meta.tocListHeading',
 				'preset'   => 'meta',
 			],
@@ -337,6 +337,16 @@ class PostNavigationPresetAttrsMap {
 				'preset'   => [ 'style' ],
 				'subName'  => 'weight',
 			],
+			'links.decoration.font.font__weightFineTune'   => [
+				'attrName' => 'links.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'weightFineTune',
+			],
+			'links.decoration.font.font__opticalSizing'    => [
+				'attrName' => 'links.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'opticalSizing',
+			],
 			'links.decoration.font.font__style'            => [
 				'attrName' => 'links.decoration.font.font',
 				'preset'   => [ 'style' ],
@@ -346,6 +356,16 @@ class PostNavigationPresetAttrsMap {
 				'attrName' => 'links.decoration.font.font',
 				'preset'   => [ 'style' ],
 				'subName'  => 'lineColor',
+			],
+			'links.decoration.font.font__lineThickness'    => [
+				'attrName' => 'links.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'lineThickness',
+			],
+			'links.decoration.font.font__underlineOffset'  => [
+				'attrName' => 'links.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'underlineOffset',
 			],
 			'links.decoration.font.font__lineStyle'        => [
 				'attrName' => 'links.decoration.font.font',
@@ -371,6 +391,36 @@ class PostNavigationPresetAttrsMap {
 				'attrName' => 'links.decoration.font.font',
 				'preset'   => [ 'style' ],
 				'subName'  => 'lineHeight',
+			],
+			'links.decoration.font.font__capitalization'   => [
+				'attrName' => 'links.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'capitalization',
+			],
+			'links.decoration.font.font__textWrap'         => [
+				'attrName' => 'links.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'textWrap',
+			],
+			'links.decoration.font.font__writingMode'      => [
+				'attrName' => 'links.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'writingMode',
+			],
+			'links.decoration.font.font__hyphens'          => [
+				'attrName' => 'links.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'hyphens',
+			],
+			'links.decoration.font.font__columnCount'      => [
+				'attrName' => 'links.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'columnCount',
+			],
+			'links.decoration.font.font__columnGap'        => [
+				'attrName' => 'links.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'columnGap',
 			],
 			'links.decoration.font.textShadow__style'      => [
 				'attrName' => 'links.decoration.font.textShadow',
@@ -492,7 +542,7 @@ class PostNavigationPresetAttrsMap {
 				'preset'   => [ 'style' ],
 				'subName'  => 'maxHeight',
 			],
-			'module.decoration.sizing__aspectRatio' => [
+			'module.decoration.sizing__aspectRatio'        => [
 				'attrName' => 'module.decoration.sizing',
 				'preset'   => [
 					'style',
@@ -797,6 +847,101 @@ class PostNavigationPresetAttrsMap {
 				'attrName' => 'module.advanced.html',
 				'preset'   => [ 'html' ],
 				'subName'  => 'htmlBefore',
+			],
+			'links.decoration.font.textEffects__fillType'  => [
+				'attrName' => 'links.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'fillType',
+			],
+			'links.decoration.font.textEffects__gradient'  => [
+				'attrName' => 'links.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient',
+			],
+			'links.decoration.font.textEffects__gradient.type' => [
+				'attrName' => 'links.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.type',
+			],
+			'links.decoration.font.textEffects__gradient.direction' => [
+				'attrName' => 'links.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.direction',
+			],
+			'links.decoration.font.textEffects__gradient.directionRadial' => [
+				'attrName' => 'links.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.directionRadial',
+			],
+			'links.decoration.font.textEffects__gradient.repeat' => [
+				'attrName' => 'links.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.repeat',
+			],
+			'links.decoration.font.textEffects__gradient.length' => [
+				'attrName' => 'links.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.length',
+			],
+			'links.decoration.font.textEffects__imageFill.blend' => [
+				'attrName' => 'links.decoration.font.textEffects',
+				'preset'   => [ 'style', 'html' ],
+				'subName'  => 'imageFill.blend',
+			],
+			'links.decoration.font.textEffects__imageFill.height' => [
+				'attrName' => 'links.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.height',
+			],
+			'links.decoration.font.textEffects__imageFill.horizontalOffset' => [
+				'attrName' => 'links.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.horizontalOffset',
+			],
+			'links.decoration.font.textEffects__imageFill.position' => [
+				'attrName' => 'links.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.position',
+			],
+			'links.decoration.font.textEffects__imageFill.repeat' => [
+				'attrName' => 'links.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.repeat',
+			],
+			'links.decoration.font.textEffects__imageFill.size' => [
+				'attrName' => 'links.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.size',
+			],
+			'links.decoration.font.textEffects__imageFill.url' => [
+				'attrName' => 'links.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.url',
+			],
+			'links.decoration.font.textEffects__imageFill.verticalOffset' => [
+				'attrName' => 'links.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.verticalOffset',
+			],
+			'links.decoration.font.textEffects__imageFill.width' => [
+				'attrName' => 'links.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.width',
+			],
+			'links.decoration.font.textEffects__strokeColor' => [
+				'attrName' => 'links.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokeColor',
+			],
+			'links.decoration.font.textEffects__strokeWidth' => [
+				'attrName' => 'links.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokeWidth',
+			],
+			'links.decoration.font.textEffects__strokePosition' => [
+				'attrName' => 'links.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokePosition',
 			],
 			'module.advanced.htmlAttributes__class'        => [
 				'attrName' => 'module.advanced.htmlAttributes',

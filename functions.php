@@ -1,6 +1,7 @@
 <?php
 // phpcs:disable Generic.WhiteSpace.ScopeIndent.Incorrect, Generic.WhiteSpace.ScopeIndent.IncorrectExact -- Until we reformat this entire file, this rule makes reviewing PRs very difficult.
 
+use ET\Builder\Framework\Settings\PageSettings;
 use ET\Builder\FrontEnd\Assets\DynamicAssetsUtils;
 use ET\Builder\Packages\StyleLibrary\Utils\Utils;
 
@@ -192,27 +193,85 @@ function et_divi_load_unminified_styles( $load ) {
 	return $load;
 }
 
+/**
+ * Whether the welcome documentation admin notice should display.
+ *
+ * @since ??
+ *
+ * @return bool
+ */
+function et_theme_epanel_reminder_should_show() {
+	global $shortname;
+
+	$documentation_option_name = $shortname . '_2_4_documentation_message';
+
+	return false === et_get_option( $shortname . '_logo' ) && false === et_get_option( $documentation_option_name );
+}
+
+/**
+ * Print admin styles for the welcome documentation notice.
+ *
+ * WordPress 7.0 sets explicit dark text on `.notice p` and dismiss controls; the
+ * notice uses a branded background, so white foreground colors are required.
+ *
+ * @since ??
+ *
+ * @return void
+ */
+function et_theme_epanel_reminder_admin_styles() {
+	?>
+<style>
+.et-divi-welcome-documentation-notice p {
+	color: #fff;
+}
+
+.et-divi-welcome-documentation-notice .notice-dismiss,
+.et-divi-welcome-documentation-notice .notice-dismiss:before {
+	color: #fff;
+}
+</style>
+	<?php
+}
+
+/**
+ * Register welcome documentation notice admin styles when the notice will display.
+ *
+ * @since ??
+ *
+ * @return void
+ */
+function et_theme_epanel_reminder_maybe_register_admin_styles() {
+	if ( ! et_theme_epanel_reminder_should_show() ) {
+		return;
+	}
+
+	add_action( 'admin_head', 'et_theme_epanel_reminder_admin_styles' );
+}
+add_action( 'admin_init', 'et_theme_epanel_reminder_maybe_register_admin_styles' );
+
 function et_theme_epanel_reminder(){
 	global $shortname, $themename;
 
-	$documentation_url         = 'http://www.elegantthemes.com/gallery/divi/readme.html';
+	$documentation_url         = 'https://help.elegantthemes.com/en/collections/10650977-divi-5';
 	$documentation_option_name = $shortname . '_2_4_documentation_message';
 
-	if ( false === et_get_option( $shortname . '_logo' ) && false === et_get_option( $documentation_option_name ) ) {
-		$message = sprintf(
-			et_get_safe_localization( __( 'Welcome to Divi! Before diving in to your new theme, please visit the <a style="color: #fff; font-weight: bold;" href="%1$s" target="_blank">Divi Documentation</a> page for access to dozens of in-depth tutorials.', $themename ) ),
-			esc_url( $documentation_url )
-		);
-
-		printf(
-			'<div class="notice is-dismissible" style="background-color: #6C2EB9; color: #fff; border-left: none;">
-				<p>%1$s</p>
-			</div>',
-			$message
-		);
-
-		et_update_option( $documentation_option_name, 'triggered' );
+	if ( ! et_theme_epanel_reminder_should_show() ) {
+		return;
 	}
+
+	$message = sprintf(
+		et_get_safe_localization( __( 'Welcome to Divi! Before diving in to your new theme, please visit the <a style="color: #fff; font-weight: bold;" href="%1$s" target="_blank">Divi Documentation</a> page for access to dozens of in-depth tutorials.', $themename ) ),
+		esc_url( $documentation_url )
+	);
+
+	printf(
+		'<div class="notice is-dismissible et-divi-welcome-documentation-notice" style="background-color: var(--app-color, #326bff); border-left: none;">
+			<p>%1$s</p>
+		</div>',
+		$message
+	);
+
+	et_update_option( $documentation_option_name, 'triggered' );
 }
 add_action( 'admin_notices', 'et_theme_epanel_reminder' );
 
@@ -8467,8 +8526,14 @@ function et_layout_body_class( $classes ) {
 		}
 	}
 
-	$page_custom_gutter = get_post_meta( get_the_ID(), '_et_pb_gutter_width', true );
-	$gutter_width = ! empty( $page_custom_gutter ) && is_singular() ? $page_custom_gutter :  (string) et_get_option( 'gutter_width', '3' );
+	if ( et_builder_d5_enabled() && is_singular() && class_exists( PageSettings::class ) ) {
+		$resolved_gutter = PageSettings::resolve_page_gutter_width( get_the_ID() );
+		$gutter_width    = (string) $resolved_gutter['value'];
+	} else {
+		$page_custom_gutter = get_post_meta( get_the_ID(), '_et_pb_gutter_width', true );
+		$gutter_width       = ! empty( $page_custom_gutter ) && is_singular() ? $page_custom_gutter : (string) et_get_option( 'gutter_width', '3' );
+	}
+
 	$classes[] = esc_attr( "et_pb_gutters{$gutter_width}" );
 
 	// Add the page builder class.

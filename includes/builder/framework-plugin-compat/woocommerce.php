@@ -14,6 +14,13 @@ use ET\Builder\VisualBuilder\Saving\SavingUtility;
  */
 class ET_Builder_Plugin_Compat_WooCommerce extends ET_Builder_Plugin_Compat_Base {
 	/**
+	 * Whether the Theme Builder single product wrapper element is open.
+	 *
+	 * @var bool
+	 */
+	private $_tb_single_product_wrapper_open = false;
+
+	/**
 	 * Constructor
 	 */
 	function __construct() {
@@ -74,6 +81,7 @@ class ET_Builder_Plugin_Compat_WooCommerce extends ET_Builder_Plugin_Compat_Base
 		// Theme Builder.
 		add_filter( 'et_theme_builder_template_settings_options', array( $this, 'maybe_filter_theme_builder_template_settings_options' ) );
 		add_action( 'et_theme_builder_after_layout_opening_wrappers', array( $this, 'maybe_trigger_woo_hooks_in_theme_builder_body' ), 10, 2 );
+		add_action( 'et_theme_builder_before_layout_closing_wrappers', array( $this, 'maybe_close_tb_single_product_wrapper' ), 10, 2 );
 
 		// Disable WooCommerce coming soon mode during dynamic assets generation.
 		add_action( 'divi_frontend_assets_dynamic_assets_before_generate', array( $this, 'maybe_disable_woocommerce_coming_soon' ) );
@@ -325,26 +333,47 @@ class ET_Builder_Plugin_Compat_WooCommerce extends ET_Builder_Plugin_Compat_Base
 	}
 
 	/**
+	 * Whether Theme Builder body layout should use the WooCommerce single product wrapper.
+	 *
+	 * @since 5.7.0
+	 *
+	 * @param string  $layout_type Layout type.
+	 * @param integer $layout_id   Layout post ID.
+	 *
+	 * @return bool
+	 */
+	private function _should_wrap_theme_builder_single_product( $layout_type, $layout_id ) {
+		if ( ET_THEME_BUILDER_BODY_LAYOUT_POST_TYPE !== $layout_type || ! is_singular( 'product' ) ) {
+			return false;
+		}
+
+		$layout = get_post( $layout_id );
+
+		if ( ! $layout ) {
+			return false;
+		}
+
+		$has_woocommerce_module_shortcode = DetectFeature::has_woocommerce_module_shortcode( $layout->post_content );
+		$has_woocommerce_module_block     = DetectFeature::has_woocommerce_module_block( $layout->post_content );
+
+		return $has_woocommerce_module_shortcode || $has_woocommerce_module_block;
+	}
+
+	/**
 	 * Trigger Woo hooks before a Theme Builder body layout is rendered
 	 * so stuff like structured data is output.
 	 *
 	 * @since 4.0.10
 	 *
-	 * @param string $layout_type
+	 * @param string  $layout_type Layout type.
+	 * @param integer $layout_id   Layout post ID.
+	 *
+	 * @return void
 	 */
 	public function maybe_trigger_woo_hooks_in_theme_builder_body( $layout_type, $layout_id ) {
 		global $product;
 
-		if ( ET_THEME_BUILDER_BODY_LAYOUT_POST_TYPE !== $layout_type || ! is_singular( 'product' ) ) {
-			return;
-		}
-
-		$layout = get_post( $layout_id );
-
-		$has_woocommerce_module_shortcode = DetectFeature::has_woocommerce_module_shortcode( $layout->post_content );
-		$has_woocommerce_module_block     = DetectFeature::has_woocommerce_module_block( $layout->post_content );
-
-		if ( ! $has_woocommerce_module_shortcode && ! $has_woocommerce_module_block ) {
+		if ( ! $this->_should_wrap_theme_builder_single_product( $layout_type, $layout_id ) ) {
 			return;
 		}
 
@@ -374,7 +403,74 @@ class ET_Builder_Plugin_Compat_WooCommerce extends ET_Builder_Plugin_Compat_Base
 			do_action( 'woocommerce_single_product_summary' );
 			do_action( 'woocommerce_after_single_product_summary' );
 			do_action( 'woocommerce_after_single_product' );
+
+			$this->maybe_open_tb_single_product_wrapper();
 		}
+	}
+
+	/**
+	 * Output opening WooCommerce single product wrapper for Theme Builder body layouts.
+	 *
+	 * Mirrors {@see content-single-product.php} wrapper markup without loading the full template.
+	 *
+	 * @since 5.7.0
+	 *
+	 * @return void
+	 */
+	public function maybe_open_tb_single_product_wrapper() {
+		global $product;
+
+		if ( $this->_tb_single_product_wrapper_open || post_password_required() ) {
+			return;
+		}
+
+		if ( ! $product || ! is_a( $product, 'WC_Product' ) ) {
+			return;
+		}
+
+		if ( ! function_exists( 'wc_product_class' ) ) {
+			return;
+		}
+
+		$product_id = ET_Post_Stack::get_main_post_id();
+
+		if ( $product_id <= 0 ) {
+			$product_id = $product->get_id();
+		}
+
+		if ( $product_id <= 0 ) {
+			return;
+		}
+
+		echo '<div id="product-' . esc_attr( (string) $product_id ) . '" ';
+		wc_product_class( '', $product );
+		echo '>';
+
+		$this->_tb_single_product_wrapper_open = true;
+	}
+
+	/**
+	 * Output closing WooCommerce single product wrapper for Theme Builder body layouts.
+	 *
+	 * @since 5.7.0
+	 *
+	 * @param string  $layout_type Layout type.
+	 * @param integer $layout_id   Layout post ID.
+	 *
+	 * @return void
+	 */
+	public function maybe_close_tb_single_product_wrapper( $layout_type, $layout_id ) {
+		if ( ! $this->_tb_single_product_wrapper_open ) {
+			return;
+		}
+
+		if ( ! $this->_should_wrap_theme_builder_single_product( $layout_type, $layout_id ) ) {
+			return;
+		}
+
+		echo '</div>';
+
+		$this->_tb_single_product_wrapper_open = false;
 	}
 
 	/**

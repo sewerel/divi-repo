@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( 'Direct access forbidden.' );
 }
 
+use ET\Builder\Packages\ModuleUtils\ModuleUtils;
 use ET\Builder\Packages\StyleLibrary\Utils\StyleDeclarations;
 
 /**
@@ -145,6 +146,8 @@ class Sizing {
 			]
 		);
 
+		$has_custom_width_context = self::has_custom_width_context( $args );
+
 		if ( $is_parent_flex_layout && isset( $size ) && is_array( $size ) ) {
 			if ( in_array( 'custom', $size, true ) ) {
 				// Custom mode is selected.
@@ -179,17 +182,17 @@ class Sizing {
 		}
 
 		$default_width = $default_attr_value['width'] ?? null;
-		if ( null !== $width && ! ( $skip_defaults && $width === $default_width ) ) {
+		if ( null !== $width && '' !== $width && ! ( $skip_defaults && $width === $default_width ) ) {
 			$style_declarations->add( 'width', $width );
 		}
 
 		$default_max_width = $default_attr_value['maxWidth'] ?? null;
-		if ( null !== $max_width && ! ( $skip_defaults && $max_width === $default_max_width ) ) {
+		if ( null !== $max_width && '' !== $max_width && ! ( $skip_defaults && $max_width === $default_max_width ) ) {
 			$style_declarations->add( 'max-width', $max_width );
 		}
 
 		$default_min_width = $default_attr_value['minWidth'] ?? null;
-		if ( null !== $min_width && ! ( $skip_defaults && $min_width === $default_min_width ) ) {
+		if ( null !== $min_width && '' !== $min_width && ! ( $skip_defaults && $min_width === $default_min_width ) ) {
 			$style_declarations->add( 'min-width', $min_width );
 		}
 
@@ -201,8 +204,10 @@ class Sizing {
 					break;
 
 				case 'center':
-					$style_declarations->add( 'margin-left', 'auto' );
-					$style_declarations->add( 'margin-right', 'auto' );
+					if ( $has_custom_width_context ) {
+						$style_declarations->add( 'margin-left', 'auto' );
+						$style_declarations->add( 'margin-right', 'auto' );
+					}
 					break;
 
 				case 'right':
@@ -216,17 +221,17 @@ class Sizing {
 		}
 
 		$default_min_height = $default_attr_value['minHeight'] ?? null;
-		if ( null !== $min_height && ! ( $skip_defaults && $min_height === $default_min_height ) ) {
+		if ( null !== $min_height && '' !== $min_height && ! ( $skip_defaults && $min_height === $default_min_height ) ) {
 			$style_declarations->add( 'min-height', $min_height );
 		}
 
 		$default_height = $default_attr_value['height'] ?? null;
-		if ( null !== $height && ! ( $skip_defaults && $height === $default_height ) ) {
+		if ( null !== $height && '' !== $height && ! ( $skip_defaults && $height === $default_height ) ) {
 			$style_declarations->add( 'height', $height );
 		}
 
 		$default_max_height = $default_attr_value['maxHeight'] ?? null;
-		if ( null !== $max_height && ! ( $skip_defaults && $max_height === $default_max_height ) ) {
+		if ( null !== $max_height && '' !== $max_height && ! ( $skip_defaults && $max_height === $default_max_height ) ) {
 			$style_declarations->add( 'max-height', $max_height );
 		}
 
@@ -293,6 +298,87 @@ class Sizing {
 		}
 
 		return $style_declarations->value();
+	}
+
+	/**
+	 * Check whether sizing has a specific width value.
+	 *
+	 * @since ??
+	 *
+	 * @param array $args Style declaration args.
+	 *
+	 * @return boolean True if the sizing has a specific width value, false otherwise.
+	 */
+	private static function has_custom_width_context( array $args ): bool {
+		$width     = self::get_effective_width_value( $args, 'width' );
+		$max_width = self::get_effective_width_value( $args, 'maxWidth' );
+		$min_width = self::get_effective_width_value( $args, 'minWidth' );
+
+		return self::is_custom_width_value( $width ) || self::is_custom_width_value( $max_width ) || self::is_custom_width_value( $min_width );
+	}
+
+	/**
+	 * Resolve effective width-style value for current breakpoint/state.
+	 *
+	 * @since ??
+	 *
+	 * @param array  $args    Style declaration args.
+	 * @param string $subname Width subname (`width`, `maxWidth`, `minWidth`).
+	 *
+	 * @return mixed Effective width value.
+	 */
+	private static function get_effective_width_value( array $args, string $subname ) {
+		$attr_value  = $args['attrValue'] ?? [];
+		$local_value = $attr_value[ $subname ] ?? null;
+
+		// Use local value whenever the current breakpoint/state explicitly sets this subname.
+		// Fallback to inherited value only when the local subname is absent.
+		if ( array_key_exists( $subname, $attr_value ) ) {
+			return $local_value;
+		}
+
+		$attr       = $args['attr'] ?? null;
+		$breakpoint = $args['breakpoint'] ?? null;
+		$state      = $args['state'] ?? 'value';
+
+		if ( ! is_array( $attr ) || ! is_string( $breakpoint ) || '' === $breakpoint || ! is_string( $state ) || '' === $state ) {
+			return $local_value;
+		}
+
+		$effective_attr_value = ModuleUtils::use_attr_value(
+			[
+				'attr'         => $attr,
+				'breakpoint'   => $breakpoint,
+				'state'        => $state,
+				'mode'         => 'getAndInheritAll',
+				'defaultValue' => $attr_value,
+			]
+		);
+
+		if ( is_array( $effective_attr_value ) && array_key_exists( $subname, $effective_attr_value ) ) {
+			return $effective_attr_value[ $subname ];
+		}
+
+		return $local_value;
+	}
+
+	/**
+	 * Check whether a width-style value is set to a specific width value.
+	 *
+	 * @since ??
+	 *
+	 * @param mixed $value Width-style value.
+	 *
+	 * @return boolean True if the value is not set to specific width values, false otherwise.
+	 */
+	private static function is_custom_width_value( $value ): bool {
+		if ( ! $value ) {
+			return false;
+		}
+
+		$normalized_value = strtolower( trim( (string) $value ) );
+
+		return ! in_array( $normalized_value, [ 'auto', '100%', 'none' ], true );
 	}
 
 	/**

@@ -534,7 +534,8 @@ class StaticCSS implements DependencyInterface {
 			// Deduplicates identical rules that repeat because module order indices reset per TB layout.
 			$merged_module_styles_data = [];
 			foreach ( self::$_elements as $element_for_merge ) {
-				$module_for_layout = Style::get_style_array( 'module', $element_for_merge->get_layout_id() );
+				$layout_id         = $element_for_merge->get_layout_id();
+				$module_for_layout = Style::get_style_array( 'module', $layout_id );
 
 				if ( ! empty( $module_for_layout ) ) {
 					$merged_module_styles_data = Style::merge_module_styles_data(

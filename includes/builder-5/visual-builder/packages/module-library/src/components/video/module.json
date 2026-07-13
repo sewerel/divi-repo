@@ -50,16 +50,20 @@
               "value": {
                 "margin-left": true,
                 "margin-right": true,
-                "width": true
+                "width": true,
+                "height": true,
+                "min-height": true,
+                "max-height": true
               }
             }
           },
           "propertySelectors": {
             "desktop": {
               "value": {
-                "height": "{{selector}}, {{selector}} .et_pb_video_box, {{selector}} .et_pb_video_box .fluid-width-video-wrapper, {{selector}} .et_pb_video_box .fluid-width-video-wrapper iframe, {{selector}} .et_pb_video_box .fluid-width-video-wrapper object, {{selector}} .et_pb_video_box .fluid-width-video-wrapper embed",
-                "min-height": "{{selector}}, {{selector}} .et_pb_video_box, {{selector}} .et_pb_video_box .fluid-width-video-wrapper, {{selector}} .et_pb_video_box .fluid-width-video-wrapper iframe, {{selector}} .et_pb_video_box .fluid-width-video-wrapper object, {{selector}} .et_pb_video_box .fluid-width-video-wrapper embed",
-                "max-height": "{{selector}}, {{selector}} .et_pb_video_box, {{selector}} .et_pb_video_box .fluid-width-video-wrapper, {{selector}} .et_pb_video_box .fluid-width-video-wrapper iframe, {{selector}} .et_pb_video_box .fluid-width-video-wrapper object, {{selector}} .et_pb_video_box .fluid-width-video-wrapper embed"
+                "height": "{{selector}}, {{selector}} .et_pb_video_box, {{selector}} .et_pb_video_box .fluid-width-video-wrapper, {{selector}} .et_pb_video_box .fluid-width-video-wrapper iframe, {{selector}} .et_pb_video_box .fluid-width-video-wrapper object, {{selector}} .et_pb_video_box .fluid-width-video-wrapper embed, {{selector}} .et_pb_video_box video",
+                "min-height": "{{selector}}, {{selector}} .et_pb_video_box, {{selector}} .et_pb_video_box .fluid-width-video-wrapper, {{selector}} .et_pb_video_box .fluid-width-video-wrapper iframe, {{selector}} .et_pb_video_box .fluid-width-video-wrapper object, {{selector}} .et_pb_video_box .fluid-width-video-wrapper embed, {{selector}} .et_pb_video_box video",
+                "max-height": "{{selector}}, {{selector}} .et_pb_video_box, {{selector}} .et_pb_video_box .fluid-width-video-wrapper, {{selector}} .et_pb_video_box .fluid-width-video-wrapper iframe, {{selector}} .et_pb_video_box .fluid-width-video-wrapper object, {{selector}} .et_pb_video_box .fluid-width-video-wrapper embed, {{selector}} .et_pb_video_box video",
+                "aspect-ratio": "{{selector}}, {{selector}} .et_pb_video_box, {{selector}} .et_pb_video_box .fluid-width-video-wrapper, {{selector}} .et_pb_video_box .fluid-width-video-wrapper iframe, {{selector}} .et_pb_video_box .fluid-width-video-wrapper object, {{selector}} .et_pb_video_box .fluid-width-video-wrapper embed, {{selector}} .et_pb_video_box video"
               }
             }
           }

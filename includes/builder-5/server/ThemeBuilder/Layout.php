@@ -104,7 +104,7 @@ class Layout {
 
 		ET_Post_Stack::replace( $layout );
 
-		$is_visual_builder     = isset( $_GET['et_fb'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Value is not used
+		$is_visual_builder     = et_core_is_fb_enabled();
 		$theme_builder_layouts = [ 'et_header_layout', 'et_footer_layout' ];
 
 		// Do not pass header and footer content here if visual builder is loaded,
@@ -144,7 +144,16 @@ class Layout {
 		$styles_manager          = $result['manager'];
 		$deferred_styles_manager = $result['deferred'] ?? null;
 
-		if ( StaticCSS::$forced_inline_styles || ! $styles_manager->has_file() || $styles_manager->forced_inline ) {
+		$has_primary_styles_file  = $styles_manager->has_file();
+		$has_deferred_styles_file = null === $deferred_styles_manager || $deferred_styles_manager->has_file();
+
+		// Collect layout styles when either primary or deferred file needs regeneration.
+		$should_collect_layout_styles = StaticCSS::$forced_inline_styles
+			|| $styles_manager->forced_inline
+			|| ! $has_primary_styles_file
+			|| ! $has_deferred_styles_file;
+
+		if ( $should_collect_layout_styles ) {
 			$custom = Page::custom_css( $layout->ID );
 
 			StaticCSS::add_element(

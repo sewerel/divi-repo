@@ -27,6 +27,7 @@ import {
   getPrDiff,
   getPrMeta,
   isTaskFile,
+  resolveCompanionContext,
   resolveRelatedPrs,
   resolveLocalRepoPath,
   resolveMode,
@@ -750,6 +751,22 @@ export const collectFacts = task({ name: "collectFacts" }, async (input) => {
     buildTaskContext(repoRoot, taskFiles),
     prMeta?.body
   );
+  const companionContext =
+    "pr-compare" === mode
+      ? resolveCompanionContext({
+          prMeta,
+          repoSlug,
+          relatedPrs,
+        })
+      : {
+          status: "unknown",
+          reason: "non_pr_mode",
+          canEvaluate: false,
+          branchName: null,
+          issueRefs: [],
+          hasConfirmedCompanion: false,
+          confirmedCompanions: [],
+        };
   const config = loadConfig(repoRoot);
   const retroReview =
     "pr-compare" === mode && null != prMeta?.number
@@ -793,6 +810,7 @@ export const collectFacts = task({ name: "collectFacts" }, async (input) => {
     taskFiles,
     taskContext,
     relatedPrs,
+    companionContext,
     retroReview,
     config,
     runStartedAt,

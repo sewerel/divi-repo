@@ -72,6 +72,7 @@ class Fonts {
 			// phpcs:ignore ET.Comments.Todo.TodoFound -- Legacy TODO: May not be tracked in GitHub issues yet. Preserve for future tracking/removal.
 			// TODO feat(D5, FE Rendering): Need to rewrite et_builder_enqueue_font in D5.
 			et_builder_enqueue_font( $font_family );
+
 		}
 	}
 

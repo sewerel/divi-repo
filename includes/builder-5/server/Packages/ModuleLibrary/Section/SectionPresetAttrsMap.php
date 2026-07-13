@@ -40,7 +40,7 @@ class SectionPresetAttrsMap {
 		unset( $map['column1.advanced.htmlAttributes__id'] );
 		unset( $map['column1.advanced.htmlAttributes__class'] );
 		unset( $map['column1.decoration.background__color'] );
-		unset( $map['column1.decoration.background__gradient.stops'] );
+		unset( $map['column1.decoration.background__gradient'] );
 		unset( $map['column1.decoration.background__gradient.enabled'] );
 		unset( $map['column1.decoration.background__gradient.type'] );
 		unset( $map['column1.decoration.background__gradient.direction'] );
@@ -96,7 +96,7 @@ class SectionPresetAttrsMap {
 		unset( $map['column2.advanced.htmlAttributes__id'] );
 		unset( $map['column2.advanced.htmlAttributes__class'] );
 		unset( $map['column2.decoration.background__color'] );
-		unset( $map['column2.decoration.background__gradient.stops'] );
+		unset( $map['column2.decoration.background__gradient'] );
 		unset( $map['column2.decoration.background__gradient.enabled'] );
 		unset( $map['column2.decoration.background__gradient.type'] );
 		unset( $map['column2.decoration.background__gradient.direction'] );
@@ -152,7 +152,7 @@ class SectionPresetAttrsMap {
 		unset( $map['column3.advanced.htmlAttributes__id'] );
 		unset( $map['column3.advanced.htmlAttributes__class'] );
 		unset( $map['column3.decoration.background__color'] );
-		unset( $map['column3.decoration.background__gradient.stops'] );
+		unset( $map['column3.decoration.background__gradient'] );
 		unset( $map['column3.decoration.background__gradient.enabled'] );
 		unset( $map['column3.decoration.background__gradient.type'] );
 		unset( $map['column3.decoration.background__gradient.direction'] );

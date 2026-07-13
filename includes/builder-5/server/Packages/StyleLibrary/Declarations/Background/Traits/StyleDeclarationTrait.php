@@ -13,6 +13,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use ET\Builder\Packages\StyleLibrary\Utils\StyleDeclarations;
+use ET\Builder\Packages\StyleLibrary\Utils\GlobalVariableReferenceUtils;
+use ET\Builder\Packages\StyleLibrary\Utils\GradientUtils;
 use ET\Builder\Packages\StyleLibrary\Utils\Utils;
 use ET\Builder\Packages\StyleLibrary\Declarations\Background\Background;
 use ET\Builder\Packages\StyleLibrary\Declarations\Background\Utils\BackgroundStyleUtils;
@@ -20,6 +22,42 @@ use ET\Builder\Packages\ModuleUtils\ModuleUtils;
 use ET\Builder\Framework\Breakpoint\Breakpoint;
 
 trait StyleDeclarationTrait {
+
+	/**
+	 * Build safe CSS background-image value from image URL.
+	 *
+	 * @since ??
+	 *
+	 * @param mixed $url Raw image URL or variable token.
+	 *
+	 * @return string
+	 */
+	private static function _get_safe_background_image_value( $url ): string {
+		$raw_url = $url;
+		$url     = Utils::resolve_and_sanitize_css_scalar_value( $url );
+
+		if ( '' === $url ) {
+			return '';
+		}
+
+		$sanitized_global_variable_reference = GlobalVariableReferenceUtils::sanitize_css_reference( $url, 'gvid' );
+		if ( '' !== $sanitized_global_variable_reference ) {
+			return $sanitized_global_variable_reference;
+		}
+
+		$is_dynamic_variable_token = is_scalar( $raw_url ) && is_string( $raw_url ) && str_contains( $raw_url, '$variable(' );
+		$is_dynamic_variable       = 1 === preg_match( '/^var\(--[a-z0-9\-_]+\)$/i', $url );
+		if ( $is_dynamic_variable_token && $is_dynamic_variable ) {
+			return "url({$url})";
+		}
+
+		$sanitized_image_variable = GlobalVariableReferenceUtils::resolve_and_sanitize_image_css_reference( $raw_url, 'gvid' );
+		if ( '' !== $sanitized_image_variable ) {
+			return $sanitized_image_variable;
+		}
+
+		return Utils::sanitize_non_variable_image_url_css_reference( $url );
+	}
 
 	/**
 	 * Generate background CSS declaration, dynamically comparing with parent breakpoint.
@@ -229,7 +267,6 @@ trait StyleDeclarationTrait {
 			$vertical_offset   = $image_values['verticalOffset'];
 			$repeat            = $image_values['repeat'];
 			$blend             = $image_values['blend'];
-			$is_img_var        = str_contains( $url, 'var(' ) || Utils::is_global_image_variable( $url );
 
 			$should_output_property = function ( $prop, $value, $attr, $breakpoint, $state ) use ( $image ) {
 				if ( 'desktop' === $breakpoint || null === $attr ) {
@@ -310,10 +347,12 @@ trait StyleDeclarationTrait {
 				return true;
 			};
 
-			if ( isset( $image_values['url'] ) && '' !== $image_values['url'] && isset( $parallax['enabled'] ) && 'on' !== $parallax['enabled'] ) {
-				$background_url = $is_img_var ? "{$url}" : "url({$url})";
+			$can_add_background_image = isset( $image_values['url'] ) && '' !== $image_values['url'] && isset( $parallax['enabled'] ) && 'on' !== $parallax['enabled'];
 
-				if ( ! in_array( $background_url, $background_images, true ) ) {
+			if ( $can_add_background_image ) {
+				$background_url = self::_get_safe_background_image_value( $url );
+
+				if ( '' !== $background_url && ! in_array( $background_url, $background_images, true ) ) {
 					$background_images[] = $background_url;
 				}
 
@@ -389,9 +428,9 @@ trait StyleDeclarationTrait {
 
 			if ( $preview && $image_values['url'] && '' !== $image_values['url'] && isset( $parallax['enabled'] ) && 'on' === $parallax['enabled'] ) {
 				if ( $should_output_property( 'url', $url, $attr, $breakpoint, $state ) ) {
-					$background_url = $is_img_var ? "{$url}" : "url({$url})";
+					$background_url = self::_get_safe_background_image_value( $url );
 
-					if ( ! in_array( $background_url, $background_images, true ) ) {
+					if ( '' !== $background_url && ! in_array( $background_url, $background_images, true ) ) {
 						$background_images[] = $background_url;
 					}
 				}
@@ -419,18 +458,38 @@ trait StyleDeclarationTrait {
 		}
 
 		if ( $gradient ) {
+			$gradient                      = GradientUtils::get_effective_gradient_for_breakpoint(
+				[
+					'attr'              => $attr,
+					'breakpoint'        => $breakpoint,
+					'state'             => $state,
+					'defaultGradient'   => $default_attr['gradient'],
+					'currentGradient'   => is_array( $gradient ) ? $gradient : [],
+					'gradientSubFields' => [
+						'enabled',
+						'stops',
+						'type',
+						'direction',
+						'directionRadial',
+						'repeat',
+						'overlaysImage',
+						'length',
+					],
+				]
+			);
+			$resolved_gradient_enabled     = $gradient['enabled'] ?? ( ! empty( $gradient['stops'] ) ? 'on' : 'off' );
+			$gradient_overlays_image_check = $gradient['overlaysImage'] ?? 'off';
+
 			// Render gradient when enabled.
-			if ( isset( $gradient['enabled'] ) && 'on' === $gradient['enabled'] ) {
+			if ( 'on' === $resolved_gradient_enabled ) {
 				// D4 compatibility: When parallax AND gradient overlays image are both enabled in non-preview mode,
 				// don't add gradient to parent element. The parallax container will have the gradient background.
-				$gradient_overlays_image_check = $gradient['overlaysImage'] ?? 'off';
-				$should_skip_gradient          = isset( $parallax['enabled'] ) && 'on' === $parallax['enabled'] && 'on' === $gradient_overlays_image_check && ! $preview;
+				$parallax_image_url   = $image_values['url'] ?? '';
+				$has_parallax_image   = is_string( $parallax_image_url ) && '' !== $parallax_image_url;
+				$should_skip_gradient = isset( $parallax['enabled'] ) && 'on' === $parallax['enabled'] && 'on' === $gradient_overlays_image_check && $has_parallax_image && ! $preview;
 
 				if ( ! $should_skip_gradient ) {
-					// Load default so if the attribute lacks required value, it'll be rendered using default.
-					$gradient_background = array_merge( $default_attr['gradient'], $gradient );
-
-					$background_images[] = Background::gradient_style_declaration( $gradient_background );
+					$background_images[] = Background::gradient_style_declaration( $gradient );
 				}
 			}
 
@@ -449,11 +508,10 @@ trait StyleDeclarationTrait {
 		if ( ! empty( $background_images ) && $gradient && isset( $gradient['enabled'] ) && 'on' === $gradient['enabled'] && ! empty( $gradient['stops'] ) ) {
 			if ( ( $image || $responsive_url ) && ! $is_image_not_enabled && isset( $image_values['url'] ) && '' !== $image_values['url'] && isset( $parallax['enabled'] ) && 'on' !== $parallax['enabled'] ) {
 				$image_url      = $image_values['url'];
-				$is_image_var   = str_contains( $image_url, 'var(' ) || Utils::is_global_image_variable( $image_url );
-				$background_url = $is_image_var ? "{$image_url}" : "url({$image_url})";
+				$background_url = self::_get_safe_background_image_value( $image_url );
 
 				// Only add if it's not already in the array (it may have been added earlier if URL changed).
-				if ( ! in_array( $background_url, $background_images, true ) ) {
+				if ( '' !== $background_url && ! in_array( $background_url, $background_images, true ) ) {
 					// Prepend image to beginning of array to maintain default order [image, gradient].
 					// This ensures overlaysImage logic works correctly.
 					array_unshift( $background_images, $background_url );
@@ -485,8 +543,10 @@ trait StyleDeclarationTrait {
 
 		$gradient_overlays_image = $gradient_overlays_image ?? $default_attr['gradient']['overlaysImage'] ?? 'off';
 		$parallax_enabled        = $parallax['enabled'] ?? 'off';
+		$parallax_image_url      = $image_values['url'] ?? '';
+		$has_parallax_image      = is_string( $parallax_image_url ) && '' !== $parallax_image_url;
 
-		if ( ! $preview && 'on' === $parallax_enabled && 'on' === $gradient_overlays_image ) {
+		if ( ! $preview && 'on' === $parallax_enabled && 'on' === $gradient_overlays_image && $has_parallax_image ) {
 			$background_images = [ 'initial' ];
 		} elseif ( ! empty( $background_images ) ) {
 			// Swap background gradient on top of background image when gradient has stops and overlayImage option is on.

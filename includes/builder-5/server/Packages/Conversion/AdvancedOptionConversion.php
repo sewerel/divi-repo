@@ -2408,7 +2408,8 @@ class AdvancedOptionConversion {
      *
      * @since ??
      *
-     * @param string $value Shortcode attribute value for font.
+     * @param string $value        Shortcode attribute value for font.
+     * @param array  $extra_params Optional conversion context (moduleName, desktopName, viewport, state).
      *
      * @return array The expanded value or empty array if no expansion was found.
      *
@@ -2422,19 +2423,40 @@ class AdvancedOptionConversion {
      * //  'lineStyle' => 'dotted',
      * //  'style' => [
      * //    'italic',
-     * //    'uppercase',
      * //    'underline',
-     * //    'capitalize',
      * //    'strikethrough',
      * //  ],
+     * //  'capitalization' => 'smallCaps',
      * //  'weight' => '300',
      * //}
      * ```
      */
-    public static function convertFont($value) {
+    public static function convertFont($value, $extra_params = []) {
+		$desktop_name = $extra_params['desktopName'] ?? '';
+		$module_name  = $extra_params['moduleName'] ?? '';
+
+		$is_text_heading_font_attr = 'divi/text' === $module_name && in_array(
+			$desktop_name,
+			[
+				'header_font',
+				'header_2_font',
+				'header_3_font',
+				'header_4_font',
+				'header_5_font',
+				'header_6_font',
+			],
+			true
+		);
+
 		// When D4 value is 8 empty pipes, return early with an empty style array.
         // This is necessary to override preset styles or larger breakpoint styles.
 		if ( '||||||||' === $value ) {
+			// Text module heading font should inherit from body font unless style is explicitly set.
+			// Returning empty array preserves heading inheritance and matches D4 rendering.
+			if ( $is_text_heading_font_attr ) {
+				return [];
+			}
+
 			return [
 				'style' => [],
 			];
@@ -2442,21 +2464,35 @@ class AdvancedOptionConversion {
 
         $valueArray = explode('|', $value);
 
-        $fontStyle = [];
+        $fontStyle          = [];
+		$fontCapitalization = '';
         if (isset($valueArray[2]) && strpos($valueArray[2], 'on') === 0) {
             $fontStyle[] = 'italic';
         }
         if (isset($valueArray[3]) && strpos($valueArray[3], 'on') === 0) {
-            $fontStyle[] = 'uppercase';
+            $fontCapitalization = 'uppercase';
+        }
+        if (isset($valueArray[10]) && strpos($valueArray[10], 'on') === 0) {
+            $fontCapitalization = 'lowercase';
         }
         if (isset($valueArray[4]) && strpos($valueArray[4], 'on') === 0) {
             $fontStyle[] = 'underline';
         }
         if (isset($valueArray[5]) && strpos($valueArray[5], 'on') === 0) {
-            $fontStyle[] = 'capitalize';
+            // D4 capitalize option produced small-caps rendering in practice.
+            $fontCapitalization = 'smallCaps';
         }
         if (isset($valueArray[6]) && strpos($valueArray[6], 'on') === 0) {
             $fontStyle[] = 'strikethrough';
+        }
+        if (isset($valueArray[9]) && strpos($valueArray[9], 'on') === 0) {
+            $fontStyle[] = 'overline';
+        }
+        if (isset($valueArray[11]) && strpos($valueArray[11], 'on') === 0) {
+            $fontCapitalization = 'smallCaps';
+        }
+        if (isset($valueArray[12]) && strpos($valueArray[12], 'on') === 0) {
+            $fontCapitalization = 'allSmallCaps';
         }
 
         $font = [];
@@ -2476,6 +2512,10 @@ class AdvancedOptionConversion {
 
         if (!empty($fontStyle)) {
             $font['style'] = $fontStyle;
+        }
+
+        if (!empty($fontCapitalization)) {
+            $font['capitalization'] = $fontCapitalization;
         }
 
         if (!empty($fontLineColor)) {

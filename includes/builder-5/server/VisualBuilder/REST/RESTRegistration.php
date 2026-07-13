@@ -63,6 +63,7 @@ use ET\Builder\VisualBuilder\REST\ContentMigration\ContentMigrationController;
 use ET\Builder\VisualBuilder\REST\CustomFont\CustomFontController;
 use ET\Builder\VisualBuilder\REST\DiviLibrary\DiviLibraryController;
 use ET\Builder\VisualBuilder\REST\OutsideVb\OutsideVbController;
+use ET\Builder\VisualBuilder\REST\PreferencesWorkspace\PreferencesWorkspaceController;
 use ET\Builder\VisualBuilder\REST\Portability\PortabilityController;
 use ET\Builder\VisualBuilder\REST\SyncToServer\SyncToServerController;
 use ET\Builder\VisualBuilder\REST\UpdateDefaultColors\UpdateDefaultColorsController;
@@ -947,6 +948,45 @@ class RESTRegistration implements DependencyInterface {
 				'args'                => [ SyncToServerController::class, 'update_args' ],
 				'callback'            => [ SyncToServerController::class, 'update' ],
 				'permission_callback' => [ SyncToServerController::class, 'update_permission' ],
+			]
+		);
+
+		/**
+		 * `/preferences-workspaces` REST routes.
+		 */
+		$route->post(
+			'/preferences-workspaces/create',
+			[
+				'args'                => [ PreferencesWorkspaceController::class, 'create_args' ],
+				'callback'            => [ PreferencesWorkspaceController::class, 'create' ],
+				'permission_callback' => [ PreferencesWorkspaceController::class, 'create_permission' ],
+			]
+		);
+
+		$route->post(
+			'/preferences-workspaces/set-default',
+			[
+				'args'                => [ PreferencesWorkspaceController::class, 'set_default_args' ],
+				'callback'            => [ PreferencesWorkspaceController::class, 'set_default' ],
+				'permission_callback' => [ PreferencesWorkspaceController::class, 'set_default_permission' ],
+			]
+		);
+
+		$route->post(
+			'/preferences-workspaces/update',
+			[
+				'args'                => [ PreferencesWorkspaceController::class, 'update_args' ],
+				'callback'            => [ PreferencesWorkspaceController::class, 'update' ],
+				'permission_callback' => [ PreferencesWorkspaceController::class, 'update_permission' ],
+			]
+		);
+
+		$route->post(
+			'/preferences-workspaces/delete',
+			[
+				'args'                => [ PreferencesWorkspaceController::class, 'delete_args' ],
+				'callback'            => [ PreferencesWorkspaceController::class, 'delete' ],
+				'permission_callback' => [ PreferencesWorkspaceController::class, 'delete_permission' ],
 			]
 		);
 

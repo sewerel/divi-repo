@@ -15,6 +15,7 @@ use ET\Builder\FrontEnd\BlockParser\BlockParserStore;
 use ET\Builder\Packages\GlobalData\GlobalData;
 use ET\Builder\Framework\Utility\LoopExcerptRenderContext;
 use ET\Builder\Packages\Module\Layout\Components\ModuleElements\ModuleElements;
+use ET\Builder\Packages\StyleLibrary\Utils\GradientUtils;
 use ET\Builder\Packages\StyleLibrary\Utils\Utils;
 use ET_Theme_Builder_Layout;
 
@@ -91,13 +92,51 @@ class Style {
 
 	/**
 	 * Cache for style key to avoid repeated function calls.
-	 * The style key remains constant during a single page render.
+	 * The style key remains constant only within a single render context.
 	 *
 	 * @since ??
 	 *
 	 * @var int|string|null
 	 */
 	private static $_style_key_cache = null;
+
+	/**
+	 * Signature of the render context used for style key cache.
+	 *
+	 * @since ??
+	 *
+	 * @var string|null
+	 */
+	private static $_style_key_cache_context = null;
+
+	/**
+	 * Build style key cache context signature.
+	 *
+	 * @since ??
+	 *
+	 * @return string
+	 */
+	private static function _get_style_key_cache_context_signature(): string {
+		if ( true === ET_Theme_Builder_Layout::is_theme_builder_layout() ) {
+			$theme_builder_layout_id = ET_Theme_Builder_Layout::get_theme_builder_layout_id();
+			if ( ! empty( $theme_builder_layout_id ) ) {
+				return 'tb:' . (string) $theme_builder_layout_id;
+			}
+
+			return 'tb';
+		}
+
+		if ( true === StaticCSS::is_wp_editor_template() ) {
+			$wp_editor_template_id = StaticCSS::get_wp_editor_template_id();
+			if ( ! empty( $wp_editor_template_id ) ) {
+				return 'wp:' . (string) $wp_editor_template_id;
+			}
+
+			return 'wp';
+		}
+
+		return 'post';
+	}
 
 	/**
 	 * Counter for generating unique keys without calling uniqid().
@@ -319,10 +358,14 @@ class Style {
 	 * @return int|string
 	 */
 	public static function get_style_key() {
-		// Cache the style key since it remains constant during a single page render.
-		// This avoids repeated calls to expensive functions like get_layout_id(),
-		// get_theme_builder_layout_id(), get_wp_editor_template_id(), etc.
-		if ( null !== self::$_style_key_cache ) {
+		$current_context_signature = self::_get_style_key_cache_context_signature();
+
+		// Cache the style key per render context (post/TB/WP template).
+		// A request can legitimately switch contexts while rendering and each context needs its own key.
+		if (
+			null !== self::$_style_key_cache
+			&& $current_context_signature === self::$_style_key_cache_context
+		) {
 			return self::$_style_key_cache;
 		}
 
@@ -334,6 +377,8 @@ class Style {
 			// need to group that CSS under the same key.
 			self::$_style_key_cache = 'post';
 		}
+
+		self::$_style_key_cache_context = $current_context_signature;
 
 		return self::$_style_key_cache;
 	}
@@ -1060,6 +1105,7 @@ class Style {
 		self::$_preset_selector_processed                  = [];
 		self::$_ancestor_ids_cache                         = [];
 		self::$_style_key_cache                            = null;
+		self::$_style_key_cache_context                    = null;
 		self::$_unique_counter                             = 0;
 		self::$_detected_module_types_for_inner_content    = [];
 		self::$_is_theme_builder_context_for_inner_content = false;
@@ -1235,7 +1281,7 @@ class Style {
 	/**
 	 * Get global variable groups as CSS styles.
 	 *
-	 * This function retrieves active numeric, font, and image global variables from global data and formats
+	 * This function retrieves active numeric, font, image, and gradient global variables from global data and formats
 	 * them into CSS custom property declarations for `:root`.
 	 *
 	 * Image values are normalized to CSS image values and wrapped with `url(...)` only when they are not
@@ -1244,20 +1290,28 @@ class Style {
 	 * @since ??
 	 *
 	 * @param array $global_variable_ids Optional list of global variable IDs to include.
-	 *                                   If omitted, all active numeric and font variables are included.
+	 *                                   If omitted, all active numeric, font, image, and gradient variables are included.
 	 *
-	 * @return string The generated `:root{...}` CSS style block containing numeric, font, and image variables.
+	 * @return string The generated `:root{...}` CSS style block containing numeric, font, image, and gradient variables.
 	 */
 	public static function get_global_numeric_and_fonts_vars_style( array $global_variable_ids = [] ): string {
-		$global_variables             = GlobalData::get_global_variables();
-		$numeric_global_variables     = $global_variables['numbers'] ?? (object) [];
-		$font_global_variables        = $global_variables['fonts'] ?? (object) [];
-		$image_global_variables       = $global_variables['images'] ?? (object) [];
-		$css_statements               = '';
-		$merged_global_variables      = array_merge( (array) $numeric_global_variables, (array) $font_global_variables, (array) $image_global_variables );
-		$font_global_variables_array  = (array) $font_global_variables;
-		$image_global_variables_array = (array) $image_global_variables;
-		$include_all_variables        = func_num_args() === 0;
+		$global_variables                = GlobalData::get_global_variables();
+		$numeric_global_variables        = $global_variables['numbers'] ?? (object) [];
+		$font_global_variables           = $global_variables['fonts'] ?? (object) [];
+		$image_global_variables          = $global_variables['images'] ?? (object) [];
+		$gradient_global_variables       = $global_variables['gradients'] ?? (object) [];
+		$global_colors                   = null;
+		$css_statements                  = '';
+		$merged_global_variables         = array_merge(
+			(array) $numeric_global_variables,
+			(array) $font_global_variables,
+			(array) $image_global_variables,
+			(array) $gradient_global_variables
+		);
+		$font_global_variables_array     = (array) $font_global_variables;
+		$image_global_variables_array    = (array) $image_global_variables;
+		$gradient_global_variables_array = (array) $gradient_global_variables;
+		$include_all_variables           = func_num_args() === 0;
 
 		foreach ( $merged_global_variables as $key => $value ) {
 			if ( is_array( $value ) ) {
@@ -1297,6 +1351,40 @@ class Style {
 					} elseif ( isset( $image_global_variables_array[ $key ] ) || isset( $image_global_variables_array[ $id ] ) ) {
 						$is_already_wrapped = 1 === preg_match( '/^\s*url\(/i', $result );
 						$result             = $is_already_wrapped ? $result : "url({$result})";
+					} elseif ( isset( $gradient_global_variables_array[ $key ] ) || isset( $gradient_global_variables_array[ $id ] ) ) {
+						$resolved_gradient_settings = GlobalData::resolve_global_gradient_variable( $result );
+
+						if ( is_array( $resolved_gradient_settings ) && ! empty( $resolved_gradient_settings ) ) {
+							if ( is_array( $resolved_gradient_settings['stops'] ?? null ) ) {
+								if ( null === $global_colors ) {
+									$global_colors = GlobalData::get_global_colors();
+								}
+
+								foreach ( $resolved_gradient_settings['stops'] as &$stop ) {
+									if ( isset( $stop['color'] ) && '' !== $stop['color'] ) {
+										$stop['color'] = GlobalData::resolve_global_color_variable(
+											$stop['color'],
+											$global_colors
+										);
+									}
+								}
+								unset( $stop ); // Break reference.
+							}
+
+							$result = GradientUtils::gradient_style_declaration(
+								[
+									'type'            => $resolved_gradient_settings['type'] ?? 'linear',
+									'direction'       => $resolved_gradient_settings['direction'] ?? '180deg',
+									'directionRadial' => $resolved_gradient_settings['directionRadial'] ?? 'center',
+									'stops'           => $resolved_gradient_settings['stops'] ?? [],
+									'repeat'          => $resolved_gradient_settings['repeat'] ?? 'off',
+									'length'          => $resolved_gradient_settings['length'] ?? '100%',
+								]
+							);
+							$result = esc_html( $result );
+						} else {
+							continue;
+						}
 					} else {
 						$result = esc_html( $result );
 					}

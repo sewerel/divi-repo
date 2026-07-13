@@ -7896,6 +7896,12 @@ return [
                 'type' => 'object',
                 'selector' => '{{selector}} .et_pb_button.wpcf7-submit',
                 'elementType' => 'button',
+                'styleProps' => [
+                    'selector' => '{{selector}} .et_pb_button.wpcf7-submit',
+                    'border' => [
+                        'important' => true
+                    ]
+                ],
                 'settings' => [
                     'advanced' => [],
                     'decoration' => [
@@ -13578,6 +13584,18 @@ return [
                                     '{{selector}}.et_pb_fullwidth_menu ul li a',
                                 'hover' =>
                                     '{{selector}}.et_pb_fullwidth_menu ul li:hover > a'
+                            ]
+                        ]
+                    ],
+                    'border' => [
+                        'selectors' => [
+                            'desktop' => [
+                                'value' =>
+                                    '{{selector}}.et_pb_fullwidth_menu .et_pb_menu__menu > nav > ul > li > a',
+                                'hover' =>
+                                    '{{selector}}.et_pb_fullwidth_menu .et_pb_menu__menu > nav > ul > li > a',
+                                'active' =>
+                                    '{{selector}}.et_pb_fullwidth_menu .et_pb_menu__menu > nav > ul > li > a'
                             ]
                         ]
                     ]
@@ -24523,8 +24541,7 @@ return [
                         ]
                     ],
                     'layout' => [
-                        'selector' =>
-                            '{{selector}}, {{selector}} .et_pb_menu_inner_container'
+                        'selector' => '{{selector}} .et_pb_menu_inner_container'
                     ]
                 ],
                 'settings' => [
@@ -24898,6 +24915,18 @@ return [
                                 'value' =>
                                     '{{selector}}.et_pb_menu .et_pb_menu__menu > nav > ul > li > a',
                                 'hover' =>
+                                    '{{selector}}.et_pb_menu .et_pb_menu__menu > nav > ul > li > a'
+                            ]
+                        ]
+                    ],
+                    'border' => [
+                        'selectors' => [
+                            'desktop' => [
+                                'value' =>
+                                    '{{selector}}.et_pb_menu .et_pb_menu__menu > nav > ul > li > a',
+                                'hover' =>
+                                    '{{selector}}.et_pb_menu .et_pb_menu__menu > nav > ul > li > a',
+                                'active' =>
                                     '{{selector}}.et_pb_menu .et_pb_menu__menu > nav > ul > li > a'
                             ]
                         ]
@@ -29451,6 +29480,15 @@ return [
                                 ]
                             ]
                         ]
+                    ],
+                    'spacing' => [
+                        'important' => [
+                            'desktop' => [
+                                'value' => [
+                                    'margin-left' => true
+                                ]
+                            ]
+                        ]
                     ]
                 ]
             ],
@@ -30527,6 +30565,15 @@ return [
                                     'value' => [
                                         'color' => true
                                     ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    'spacing' => [
+                        'important' => [
+                            'desktop' => [
+                                'value' => [
+                                    'margin-left' => true
                                 ]
                             ]
                         ]
@@ -32170,6 +32217,7 @@ return [
                                 'desktop' => [
                                     'value' => [
                                         'color' => true,
+                                        'font-weight' => true,
                                         'line-height' => true
                                     ]
                                 ]
@@ -32995,7 +33043,7 @@ return [
             'sidebar' => [
                 'type' => 'object',
                 'selector' =>
-                    '{{selector}}.et_pb_widget_area li, {{selector}}.et_pb_widget_area li:before, {{selector}}.et_pb_widget_area a',
+                    '{{selector}}.et_pb_widget_area li, {{selector}}.et_pb_widget_area li:before, {{selector}}.et_pb_widget_area a, {{selector}}.et_pb_widget_area p, {{selector}}.et_pb_widget_area pre, {{selector}}.et_pb_widget_area code',
                 'settings' => [
                     'innerContent' => [
                         'groupType' => 'group-items',
@@ -33099,7 +33147,7 @@ return [
                             'desktop' => [
                                 'value' => [
                                     'line-height' =>
-                                        '{{selector}}.et_pb_widget_area p'
+                                        '{{selector}}.et_pb_widget_area p, {{selector}}.et_pb_widget_area pre, {{selector}}.et_pb_widget_area code'
                                 ]
                             ]
                         ],
@@ -37286,7 +37334,6 @@ return [
                                 'description' =>
                                     'Here you can define a custom color for the social network icon.',
                                 'features' => [
-                                    'sticky' => false,
                                     'dynamicContent' => [
                                         'type' => 'color'
                                     ]
@@ -37329,7 +37376,6 @@ return [
                                         'Control the size of the icon by increasing or decreasing the font size.',
                                     'category' => 'font_option',
                                     'features' => [
-                                        'sticky' => false,
                                         'dynamicContent' => [
                                             'type' => 'number'
                                         ]
@@ -37660,7 +37706,6 @@ return [
                                 'description' =>
                                     'Here you can define a custom color for the social network icon.',
                                 'features' => [
-                                    'sticky' => false,
                                     'dynamicContent' => [
                                         'type' => 'color'
                                     ]
@@ -37703,7 +37748,6 @@ return [
                                         'Control the size of the icon by increasing or decreasing the font size',
                                     'category' => 'font_option',
                                     'features' => [
-                                        'sticky' => false,
                                         'dynamicContent' => [
                                             'type' => 'number'
                                         ]
@@ -37830,6 +37874,12 @@ return [
                         ]
                     ]
                 ]
+            ],
+            'iconLink' => [
+                'type' => 'object',
+                'label' => 'Icon Link',
+                'selector' => '{{selector}} a.icon',
+                'supportsCustomAttributes' => true
             ],
             'button' => [
                 'type' => 'object',
@@ -38241,8 +38291,8 @@ return [
                                         'props' => [
                                             'cssProperty' => 'fill-opacity',
                                             'cssSliderUI' => true,
-                                            'min' => 0,
-                                            'max' => 1,
+                                            'minLimit' => 0,
+                                            'maxLimit' => 1,
                                             'step' => 0.01,
                                             'defaultValue' => '1',
                                             'defaultUnit' => ''
@@ -38294,8 +38344,8 @@ return [
                                         'name' => 'divi/range',
                                         'props' => [
                                             'cssProperty' => 'stroke-width',
-                                            'min' => 0,
-                                            'max' => 50,
+                                            'minLimit' => 0,
+                                            'maxLimit' => 50,
                                             'step' => 1,
                                             'defaultUnit' => 'px'
                                         ]
@@ -38324,8 +38374,8 @@ return [
                                         'props' => [
                                             'cssProperty' => 'stroke-opacity',
                                             'cssSliderUI' => true,
-                                            'min' => 0,
-                                            'max' => 1,
+                                            'minLimit' => 0,
+                                            'maxLimit' => 1,
                                             'step' => 0.01,
                                             'defaultValue' => '1',
                                             'defaultUnit' => ''
@@ -41225,6 +41275,36 @@ return [
                                         ],
                                         'fields' => [
                                             'body' => [
+                                                'size' => [
+                                                    'priority' => 40
+                                                ],
+                                                'color' => [
+                                                    'priority' => 50
+                                                ],
+                                                'lineHeight' => [
+                                                    'priority' => 60
+                                                ],
+                                                'letterSpacing' => [
+                                                    'priority' => 70
+                                                ],
+                                                'capitalization' => [
+                                                    'priority' => 71
+                                                ],
+                                                'style' => [
+                                                    'priority' => 72
+                                                ],
+                                                'lineColor' => [
+                                                    'priority' => 73
+                                                ],
+                                                'lineThickness' => [
+                                                    'priority' => 74
+                                                ],
+                                                'underlineOffset' => [
+                                                    'priority' => 75
+                                                ],
+                                                'lineStyle' => [
+                                                    'priority' => 76
+                                                ],
                                                 'textAlign' => [
                                                     'render' => false
                                                 ]
@@ -43946,6 +44026,490 @@ return [
             ]
         ]
     ],
+    'tooltip' => [
+        'name' => 'divi/tooltip',
+        'd4Shortcode' => '',
+        'moduleClassName' => 'et_pb_tooltip',
+        'moduleOrderClassName' => 'et_pb_tooltip',
+        'title' => 'Tooltip',
+        'titles' => 'Tooltips',
+        'moduleIcon' => 'divi/module-tooltip',
+        'category' => 'module',
+        'childrenName' => [],
+        'videos' => [
+            [
+                'id' => 'novideo',
+                'name' => 'Tooltip module'
+            ]
+        ],
+        'attributes' => [
+            'content' => [
+                'type' => 'object',
+                'selector' => '{{selector}} .et_pb_tooltip_inner',
+                'supportsCustomAttributes' => true,
+                'elementType' => 'content',
+                'attributes' => [
+                    'class' => 'et_pb_tooltip_inner'
+                ],
+                'settings' => [
+                    'innerContent' => [
+                        'groupType' => 'group-item',
+                        'item' => [
+                            'groupSlug' => 'contentText',
+                            'priority' => 5,
+                            'render' => true,
+                            'attrName' => 'content.innerContent',
+                            'label' => 'Body',
+                            'description' =>
+                                'Here you can create the content that will be used within the tooltip.',
+                            'category' => 'basic_option',
+                            'features' => [
+                                'dynamicContent' => [
+                                    'type' => 'text'
+                                ],
+                                'sticky' => false,
+                                'preset' => 'content'
+                            ],
+                            'component' => [
+                                'type' => 'field',
+                                'name' => 'divi/richtext'
+                            ]
+                        ]
+                    ],
+                    'decoration' => [
+                        'bodyFont' => []
+                    ]
+                ]
+            ],
+            'module' => [
+                'type' => 'object',
+                'selector' => '{{selector}}',
+                'styleProps' => [
+                    'background' => [],
+                    'border' => [],
+                    'boxShadow' => [],
+                    'sizing' => [],
+                    'spacing' => [
+                        'important' => true
+                    ],
+                    'layout' => [],
+                    'filters' => [],
+                    'transform' => [],
+                    'animation' => [],
+                    'transition' => [],
+                    'overflow' => []
+                ],
+                'settings' => [
+                    'meta' => [
+                        'meta' => []
+                    ],
+                    'advanced' => [
+                        'elements' => [],
+                        'html' => [],
+                        'link' => [],
+                        'loop' => [],
+                        'tooltip' => [
+                            'groupType' => 'group-items',
+                            'items' => [
+                                'trigger' => [
+                                    'groupSlug' => 'designTooltip',
+                                    'priority' => 10,
+                                    'render' => true,
+                                    'attrName' => 'module.advanced.tooltip',
+                                    'subName' => 'trigger',
+                                    'label' => 'Show Tooltip On',
+                                    'description' =>
+                                        'Choose when the tooltip is shown to visitors.',
+                                    'category' => 'basic_option',
+                                    'features' => [
+                                        'responsive' => true,
+                                        'hover' => false,
+                                        'sticky' => false,
+                                        'preset' => ['script']
+                                    ],
+                                    'component' => [
+                                        'type' => 'field',
+                                        'name' => 'divi/select',
+                                        'props' => [
+                                            'defaultValue' => 'hover',
+                                            'options' => [
+                                                'hover' => [
+                                                    'label' => 'Hover'
+                                                ],
+                                                'click' => [
+                                                    'label' => 'Click'
+                                                ],
+                                                'always' => [
+                                                    'label' => 'Always'
+                                                ]
+                                            ]
+                                        ]
+                                    ]
+                                ],
+                                'positionMode' => [
+                                    'groupSlug' => 'designTooltip',
+                                    'priority' => 15,
+                                    'render' => true,
+                                    'attrName' => 'module.advanced.tooltip',
+                                    'subName' => 'positionMode',
+                                    'label' => 'Tooltip Movement',
+                                    'description' =>
+                                        'Anchored keeps the tooltip fixed relative to the target. Follow cursor moves it with the pointer while open.',
+                                    'category' => 'basic_option',
+                                    'features' => [
+                                        'responsive' => true,
+                                        'hover' => false,
+                                        'sticky' => false,
+                                        'preset' => ['script']
+                                    ],
+                                    'component' => [
+                                        'type' => 'field',
+                                        'name' => 'divi/select',
+                                        'props' => [
+                                            'defaultValue' => 'anchored',
+                                            'options' => [
+                                                'anchored' => [
+                                                    'label' => 'Anchored'
+                                                ],
+                                                'followCursor' => [
+                                                    'label' => 'Follow Cursor'
+                                                ]
+                                            ]
+                                        ]
+                                    ]
+                                ],
+                                'tooltipPlacementGrid' => [
+                                    'groupSlug' => 'designTooltip',
+                                    'priority' => 22,
+                                    'render' => true,
+                                    'attrName' => 'module.advanced.tooltip',
+                                    'subName' => 'placement',
+                                    'label' => 'Tooltip Position',
+                                    'description' =>
+                                        'Inner grid keeps the tooltip within the target; outer ring places it outside. This sets placement, inside/outside bounds, and edge alignment.',
+                                    'category' => 'basic_option',
+                                    'features' => [
+                                        'responsive' => true,
+                                        'hover' => false,
+                                        'sticky' => false,
+                                        'preset' => ['script']
+                                    ],
+                                    'component' => [
+                                        'type' => 'field',
+                                        'name' => 'divi/placement-grid-picker',
+                                        'props' => [
+                                            'layout' => 'outer-inner',
+                                            'defaultValue' =>
+                                                'outside top center'
+                                        ]
+                                    ]
+                                ],
+                                'skid' => [
+                                    'groupSlug' => 'designTooltip',
+                                    'priority' => 50,
+                                    'render' => true,
+                                    'attrName' => 'module.advanced.tooltip',
+                                    'subName' => 'skid',
+                                    'label' => 'Tooltip Skid',
+                                    'description' =>
+                                        'Shifts the tooltip along the target edge (cross-axis offset from the placement).',
+                                    'category' => 'basic_option',
+                                    'features' => [
+                                        'responsive' => true,
+                                        'hover' => false,
+                                        'sticky' => false,
+                                        'preset' => ['script'],
+                                        'dynamicContent' => [
+                                            'type' => 'number'
+                                        ]
+                                    ],
+                                    'component' => [
+                                        'type' => 'field',
+                                        'name' => 'divi/range',
+                                        'props' => [
+                                            'cssProperty' => 'margin',
+                                            'defaultUnit' => 'px'
+                                        ]
+                                    ]
+                                ],
+                                'distance' => [
+                                    'groupSlug' => 'designTooltip',
+                                    'priority' => 60,
+                                    'render' => true,
+                                    'attrName' => 'module.advanced.tooltip',
+                                    'subName' => 'distance',
+                                    'label' => 'Tooltip Distance',
+                                    'description' =>
+                                        'Gap from the target along the placement direction (main-axis offset).',
+                                    'category' => 'basic_option',
+                                    'features' => [
+                                        'responsive' => true,
+                                        'hover' => false,
+                                        'sticky' => false,
+                                        'preset' => ['script'],
+                                        'dynamicContent' => [
+                                            'type' => 'number'
+                                        ]
+                                    ],
+                                    'component' => [
+                                        'type' => 'field',
+                                        'name' => 'divi/range',
+                                        'props' => [
+                                            'cssProperty' => 'margin',
+                                            'defaultUnit' => 'px'
+                                        ]
+                                    ]
+                                ],
+                                'openDelay' => [
+                                    'groupSlug' => 'designTooltip',
+                                    'priority' => 70,
+                                    'render' => true,
+                                    'attrName' => 'module.advanced.tooltip',
+                                    'subName' => 'openDelay',
+                                    'label' => 'Tooltip Open Delay',
+                                    'description' =>
+                                        'Delay before the tooltip opens.',
+                                    'category' => 'basic_option',
+                                    'features' => [
+                                        'responsive' => true,
+                                        'hover' => false,
+                                        'sticky' => false,
+                                        'preset' => ['script'],
+                                        'dynamicContent' => [
+                                            'type' => 'number'
+                                        ]
+                                    ],
+                                    'component' => [
+                                        'type' => 'field',
+                                        'name' => 'divi/range',
+                                        'props' => [
+                                            'cssProperty' =>
+                                                'transition-duration',
+                                            'defaultUnit' => 'ms',
+                                            'minLimit' => 0
+                                        ]
+                                    ]
+                                ],
+                                'closeDelay' => [
+                                    'groupSlug' => 'designTooltip',
+                                    'priority' => 80,
+                                    'render' => true,
+                                    'attrName' => 'module.advanced.tooltip',
+                                    'subName' => 'closeDelay',
+                                    'label' => 'Tooltip Close Delay',
+                                    'description' =>
+                                        'Delay before the tooltip closes (mainly for hover).',
+                                    'category' => 'basic_option',
+                                    'features' => [
+                                        'responsive' => true,
+                                        'hover' => false,
+                                        'sticky' => false,
+                                        'preset' => ['script'],
+                                        'dynamicContent' => [
+                                            'type' => 'number'
+                                        ]
+                                    ],
+                                    'component' => [
+                                        'type' => 'field',
+                                        'name' => 'divi/range',
+                                        'props' => [
+                                            'cssProperty' =>
+                                                'transition-duration',
+                                            'defaultUnit' => 'ms',
+                                            'minLimit' => 0
+                                        ]
+                                    ]
+                                ],
+                                'showArrow' => [
+                                    'groupSlug' => 'designTooltip',
+                                    'priority' => 85,
+                                    'render' => true,
+                                    'attrName' => 'module.advanced.tooltip',
+                                    'subName' => 'showArrow',
+                                    'label' => 'Show Tooltip Arrow',
+                                    'description' =>
+                                        'Display a small pointer toward the parent module.',
+                                    'category' => 'basic_option',
+                                    'features' => [
+                                        'responsive' => true,
+                                        'hover' => false,
+                                        'sticky' => false,
+                                        'preset' => ['script']
+                                    ],
+                                    'component' => [
+                                        'type' => 'field',
+                                        'name' => 'divi/toggle',
+                                        'props' => [
+                                            'defaultValue' => 'off'
+                                        ]
+                                    ]
+                                ],
+                                'arrowColor' => [
+                                    'groupSlug' => 'designTooltip',
+                                    'priority' => 90,
+                                    'render' => true,
+                                    'attrName' => 'module.advanced.tooltip',
+                                    'subName' => 'arrowColor',
+                                    'label' => 'Tooltip Arrow Color',
+                                    'description' =>
+                                        'Choose the fill color for the tooltip arrow. By default this matches the module background color.',
+                                    'category' => 'basic_option',
+                                    'features' => [
+                                        'responsive' => true,
+                                        'hover' => false,
+                                        'sticky' => false,
+                                        'preset' => ['script', 'style'],
+                                        'dynamicContent' => [
+                                            'type' => 'color'
+                                        ]
+                                    ],
+                                    'component' => [
+                                        'type' => 'field',
+                                        'name' => 'divi/color-picker'
+                                    ]
+                                ],
+                                'arrowPlacement' => [
+                                    'groupSlug' => 'designTooltip',
+                                    'priority' => 91,
+                                    'render' => true,
+                                    'attrName' => 'module.advanced.tooltip',
+                                    'subName' => 'arrowPlacement',
+                                    'label' => 'Tooltip Arrow Placement',
+                                    'description' =>
+                                        'Choose which tooltip edge shows the arrow and where it sits along that edge (outer ring).',
+                                    'category' => 'basic_option',
+                                    'features' => [
+                                        'responsive' => true,
+                                        'hover' => false,
+                                        'sticky' => false,
+                                        'preset' => ['script']
+                                    ],
+                                    'component' => [
+                                        'type' => 'field',
+                                        'name' => 'divi/placement-grid-picker',
+                                        'props' => [
+                                            'layout' => 'outer-only',
+                                            'defaultValue' =>
+                                                'outside bottom center'
+                                        ]
+                                    ]
+                                ],
+                                'arrowOffset' => [
+                                    'groupSlug' => 'designTooltip',
+                                    'priority' => 95,
+                                    'render' => true,
+                                    'attrName' => 'module.advanced.tooltip',
+                                    'subName' => 'arrowOffset',
+                                    'label' => 'Tooltip Arrow Position',
+                                    'description' =>
+                                        'Slide the arrow along the edge that faces the target.',
+                                    'category' => 'basic_option',
+                                    'features' => [
+                                        'responsive' => true,
+                                        'hover' => false,
+                                        'sticky' => false,
+                                        'preset' => ['script'],
+                                        'dynamicContent' => [
+                                            'type' => 'number'
+                                        ]
+                                    ],
+                                    'component' => [
+                                        'type' => 'field',
+                                        'name' => 'divi/range',
+                                        'props' => [
+                                            'cssProperty' => 'margin',
+                                            'defaultUnit' => 'px'
+                                        ]
+                                    ]
+                                ],
+                                'arrowSize' => [
+                                    'groupSlug' => 'designTooltip',
+                                    'priority' => 96,
+                                    'render' => true,
+                                    'attrName' => 'module.advanced.tooltip',
+                                    'subName' => 'arrowSize',
+                                    'label' => 'Tooltip Arrow Size',
+                                    'description' =>
+                                        'Control how large the arrow appears.',
+                                    'category' => 'basic_option',
+                                    'features' => [
+                                        'responsive' => true,
+                                        'hover' => false,
+                                        'sticky' => false,
+                                        'preset' => ['script'],
+                                        'dynamicContent' => [
+                                            'type' => 'number'
+                                        ]
+                                    ],
+                                    'component' => [
+                                        'type' => 'field',
+                                        'name' => 'divi/range',
+                                        'props' => [
+                                            'cssProperty' => 'margin',
+                                            'defaultUnit' => 'px'
+                                        ]
+                                    ]
+                                ]
+                            ]
+                        ]
+                    ],
+                    'decoration' => [
+                        'animation' => [],
+                        'attributes' => [],
+                        'background' => [],
+                        'border' => [],
+                        'boxShadow' => [],
+                        'conditions' => [],
+                        'disabledOn' => [],
+                        'filters' => [],
+                        'interactions' => [],
+                        'layout' => [],
+                        'order' => [],
+                        'overflow' => [],
+                        'scroll' => [],
+                        'sizing' => [],
+                        'spacing' => [],
+                        'sticky' => [],
+                        'transform' => [],
+                        'transition' => [],
+                        'zIndex' => []
+                    ]
+                ]
+            ]
+        ],
+        'customCssFields' => [],
+        'settings' => [
+            'content' => 'auto',
+            'design' => 'auto',
+            'advanced' => 'auto',
+            'groups' => [
+                'contentText' => [
+                    'panel' => 'content',
+                    'priority' => 5,
+                    'groupName' => 'contentText',
+                    'component' => [
+                        'name' => 'divi/composite',
+                        'props' => [
+                            'groupLabel' => 'Text',
+                            'preset' => 'content'
+                        ]
+                    ]
+                ],
+                'designTooltip' => [
+                    'panel' => 'design',
+                    'priority' => 3,
+                    'groupName' => 'designTooltip',
+                    'component' => [
+                        'name' => 'divi/composite',
+                        'props' => [
+                            'groupLabel' => 'Tooltip',
+                            'presetGroup' => 'divi/tooltip'
+                        ]
+                    ]
+                ]
+            ]
+        ]
+    ],
     'video' => [
         'name' => 'divi/video',
         'd4Shortcode' => 'et_pb_video',
@@ -43998,7 +44562,10 @@ return [
                                 'value' => [
                                     'margin-left' => true,
                                     'margin-right' => true,
-                                    'width' => true
+                                    'width' => true,
+                                    'height' => true,
+                                    'min-height' => true,
+                                    'max-height' => true
                                 ]
                             ]
                         ],
@@ -44006,11 +44573,13 @@ return [
                             'desktop' => [
                                 'value' => [
                                     'height' =>
-                                        '{{selector}}, {{selector}} .et_pb_video_box, {{selector}} .et_pb_video_box .fluid-width-video-wrapper, {{selector}} .et_pb_video_box .fluid-width-video-wrapper iframe, {{selector}} .et_pb_video_box .fluid-width-video-wrapper object, {{selector}} .et_pb_video_box .fluid-width-video-wrapper embed',
+                                        '{{selector}}, {{selector}} .et_pb_video_box, {{selector}} .et_pb_video_box .fluid-width-video-wrapper, {{selector}} .et_pb_video_box .fluid-width-video-wrapper iframe, {{selector}} .et_pb_video_box .fluid-width-video-wrapper object, {{selector}} .et_pb_video_box .fluid-width-video-wrapper embed, {{selector}} .et_pb_video_box video',
                                     'min-height' =>
-                                        '{{selector}}, {{selector}} .et_pb_video_box, {{selector}} .et_pb_video_box .fluid-width-video-wrapper, {{selector}} .et_pb_video_box .fluid-width-video-wrapper iframe, {{selector}} .et_pb_video_box .fluid-width-video-wrapper object, {{selector}} .et_pb_video_box .fluid-width-video-wrapper embed',
+                                        '{{selector}}, {{selector}} .et_pb_video_box, {{selector}} .et_pb_video_box .fluid-width-video-wrapper, {{selector}} .et_pb_video_box .fluid-width-video-wrapper iframe, {{selector}} .et_pb_video_box .fluid-width-video-wrapper object, {{selector}} .et_pb_video_box .fluid-width-video-wrapper embed, {{selector}} .et_pb_video_box video',
                                     'max-height' =>
-                                        '{{selector}}, {{selector}} .et_pb_video_box, {{selector}} .et_pb_video_box .fluid-width-video-wrapper, {{selector}} .et_pb_video_box .fluid-width-video-wrapper iframe, {{selector}} .et_pb_video_box .fluid-width-video-wrapper object, {{selector}} .et_pb_video_box .fluid-width-video-wrapper embed'
+                                        '{{selector}}, {{selector}} .et_pb_video_box, {{selector}} .et_pb_video_box .fluid-width-video-wrapper, {{selector}} .et_pb_video_box .fluid-width-video-wrapper iframe, {{selector}} .et_pb_video_box .fluid-width-video-wrapper object, {{selector}} .et_pb_video_box .fluid-width-video-wrapper embed, {{selector}} .et_pb_video_box video',
+                                    'aspect-ratio' =>
+                                        '{{selector}}, {{selector}} .et_pb_video_box, {{selector}} .et_pb_video_box .fluid-width-video-wrapper, {{selector}} .et_pb_video_box .fluid-width-video-wrapper iframe, {{selector}} .et_pb_video_box .fluid-width-video-wrapper object, {{selector}} .et_pb_video_box .fluid-width-video-wrapper embed, {{selector}} .et_pb_video_box video'
                                 ]
                             ]
                         ]
@@ -59597,14 +60166,19 @@ return [
                     'border' => [
                         'propertySelectors' => [
                             'desktop' => [
+                                'hover' => [
+                                    'border-radius' =>
+                                        '{{selector}}.et_pb_module .et_shop_image > img{{:hover}}, {{selector}}.et_pb_module .et_shop_image .et_overlay'
+                                ],
                                 'value' => [
                                     'border-radius' =>
-                                        '{{selector}}.et_pb_module .et_shop_image',
+                                        '{{selector}}.et_pb_module .et_shop_image > img, {{selector}}.et_pb_module .et_shop_image .et_overlay',
                                     'border-style' =>
-                                        '{{selector}}.et_pb_module .et_shop_image'
+                                        '{{selector}}.et_pb_module .et_shop_image > img, {{selector}}.et_pb_module .et_shop_image .et_overlay'
                                 ]
                             ]
-                        ]
+                        ],
+                        'important' => true
                     ],
                     'boxShadow' => [
                         'selector' => '{{selector}} .et_shop_image',

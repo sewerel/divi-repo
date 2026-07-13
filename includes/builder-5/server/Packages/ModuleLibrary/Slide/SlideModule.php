@@ -288,7 +288,7 @@ class SlideModule implements DependencyInterface {
 		$video_image = ! empty( $video ) ? $video : $image_wrapper;
 
 		// Slide Title.
-		$button_link        = $attrs['button']['innerContent']['desktop']['value']['linkUrl'] ?? '';
+		$button_link        = HTMLUtility::resolve_url_shortcodes( $attrs['button']['innerContent']['desktop']['value']['linkUrl'] ?? '' );
 		$button_link_target = $attrs['button']['innerContent']['desktop']['value']['linkTarget'] ?? '';
 		$has_button_link    = ! empty( $button_link ) && '#' !== $button_link;
 

@@ -143,27 +143,18 @@ class ModuleElementsUtils {
 	/**
 	 * Resolves a single string image URL from image inner content for responsive metadata.
 	 *
-	 * Only top-level `src` then `url` string values are used. Non-string or empty values
+	 * Top-level `src` then `url` are resolved to a string URL. String values and nested
+	 * object shapes (e.g. composite `src` payloads) are supported. Non-resolvable values
 	 * yield an empty string so callers never pass invalid types into URL-only APIs.
 	 *
 	 * @since ??
 	 *
 	 * @param array $image_attr_value Image attribute value for one breakpoint/state.
 	 *
-	 * @return string Non-empty URL string, or empty string when none is valid.
+	 * @return string URL string, or empty string when none is valid.
 	 */
 	private static function _resolve_string_image_source_for_responsive_attrs( array $image_attr_value ): string {
-		$src = $image_attr_value['src'] ?? null;
-		if ( is_string( $src ) && '' !== $src ) {
-			return $src;
-		}
-
-		$url = $image_attr_value['url'] ?? null;
-		if ( is_string( $url ) && '' !== $url ) {
-			return $url;
-		}
-
-		return '';
+		return self::resolve_image_src( $image_attr_value['src'] ?? $image_attr_value['url'] ?? '' );
 	}
 
 	/**
@@ -202,7 +193,6 @@ class ModuleElementsUtils {
 		}
 
 		$image_src     = self::_resolve_string_image_source_for_responsive_attrs( $image_attr_value );
-		$attachment_id = 0;
 
 		// Resolve id before URL branch so composite innerContent still merges a real attachment id (#49908).
 		$attachment_id = absint( $image_attr_value['id'] ?? 0 );
@@ -297,6 +287,33 @@ class ModuleElementsUtils {
 		}
 
 		return $cached_data;
+	}
+  
+  /**
+	 * Resolves image source value to a string URL.
+	 *
+	 * @since ??
+	 *
+	 * @param mixed $image_src_value Raw image source value.
+	 *
+	 * @return string
+	 */
+	private static function resolve_image_src( $image_src_value ): string {
+		if ( is_string( $image_src_value ) ) {
+			return $image_src_value;
+		}
+		if ( ! is_array( $image_src_value ) ) {
+			return '';
+		}
+		$nested_src = $image_src_value['src'] ?? '';
+		if ( is_string( $nested_src ) ) {
+			return $nested_src;
+		}
+		$nested_url = $image_src_value['url'] ?? '';
+		if ( is_string( $nested_url ) ) {
+			return $nested_url;
+		}
+		return '';
 	}
 
 	/**

@@ -12,6 +12,7 @@
 
 namespace ET\Builder\Packages\WooCommerce;
 
+use ET\Builder\Framework\UserRole\UserRole;
 use ET\Builder\Framework\Utility\ArrayUtility;
 use ET\Builder\Framework\Utility\Conditions;
 use ET\Builder\FrontEnd\Assets\DetectFeature;
@@ -2233,6 +2234,36 @@ class WooCommerceUtils {
 	 */
 	public static function validate_product_id( $param, $request = null ): bool { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter -- WordPress REST API callback signature requirement.
 		return 'current' === $param || 'latest' === $param || ( is_numeric( $param ) && absint( $param ) > 0 );
+	}
+
+	/**
+	 * Determine whether the current user can render the requested product.
+	 *
+	 * Published products are public. Non-published products require the object-level
+	 * capability WordPress maps for reading that product.
+	 *
+	 * @since ??
+	 *
+	 * @param mixed $product_id Product ID or the `current`/`latest` selector.
+	 *
+	 * @return bool True when the requested product may be rendered.
+	 */
+	public static function can_current_user_render_product( $product_id ): bool {
+		if ( ! UserRole::can_current_user_use_visual_builder() ) {
+			return false;
+		}
+
+		$product = self::get_product( (string) $product_id );
+
+		// Leave invalid and missing products to argument validation and the controller's response.
+		if ( ! $product ) {
+			return true;
+		}
+
+		$product_id     = $product->get_id();
+		$product_status = get_post_status( $product_id );
+
+		return 'publish' === $product_status || current_user_can( 'read_post', $product_id );
 	}
 
 	/**

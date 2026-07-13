@@ -12,6 +12,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( 'Direct access forbidden.' );
 }
 
+use ET\Builder\Framework\Utility\HTMLUtility;
+
 /**
  * LinkUtils class.
  *
@@ -75,10 +77,13 @@ class LinkUtils {
 			return [];
 		}
 
+		$url_value = (string) ( $args['attr']['desktop']['value']['url'] ?? '' );
+		$url_value = HTMLUtility::resolve_url_shortcodes( $url_value );
+
 		return [
 			'class'  => ltrim( $args['selector'], '.' ),
 			// esc_url_raw keeps & in query strings for JSON/JS; esc_url encodes to &#038; and breaks the link script.
-			'url'    => esc_url_raw( $args['attr']['desktop']['value']['url'] ),
+			'url'    => esc_url_raw( $url_value ),
 			'target' => 'on' === ( $args['attr']['desktop']['value']['target'] ?? 'off' ) ? '_blank' : '_self',
 		];
 	}
@@ -94,6 +99,9 @@ class LinkUtils {
 	 */
 	public static function is_enabled( array $attr ): bool {
 		// Must match generate_data() so validation aligns with the URL sent to script data.
-		return (bool) esc_url_raw( $attr['desktop']['value']['url'] ?? '' );
+		$url_value = (string) ( $attr['desktop']['value']['url'] ?? '' );
+		$url_value = HTMLUtility::resolve_url_shortcodes( $url_value );
+
+		return (bool) esc_url_raw( $url_value );
 	}
 }

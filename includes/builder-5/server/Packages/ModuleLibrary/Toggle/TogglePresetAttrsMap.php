@@ -68,68 +68,47 @@ class TogglePresetAttrsMap {
 				],
 				'subName'  => 'color',
 			],
-			'module.decoration.background__gradient.stops' => [
+			'module.decoration.background__gradient'       => [
 				'attrName' => 'module.decoration.background',
 				'preset'   => [
 					'style',
 					'html',
 				],
-				'subName'  => 'gradient.stops',
+				'subName'  => 'gradient',
 			],
 			'module.decoration.background__gradient.enabled' => [
 				'attrName' => 'module.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.enabled',
 			],
 			'module.decoration.background__gradient.type'  => [
 				'attrName' => 'module.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.type',
 			],
 			'module.decoration.background__gradient.direction' => [
 				'attrName' => 'module.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.direction',
 			],
 			'module.decoration.background__gradient.directionRadial' => [
 				'attrName' => 'module.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.directionRadial',
 			],
 			'module.decoration.background__gradient.repeat' => [
 				'attrName' => 'module.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.repeat',
 			],
 			'module.decoration.background__gradient.length' => [
 				'attrName' => 'module.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.length',
 			],
 			'module.decoration.background__gradient.overlaysImage' => [
 				'attrName' => 'module.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.overlaysImage',
 			],
 			'module.decoration.background__image.url'      => [
@@ -441,7 +420,7 @@ class TogglePresetAttrsMap {
 				'attrName' => 'module.meta.meta.forceVisible',
 				'preset'   => 'meta',
 			],
-			'module.meta.meta.tocListHeading'                => [
+			'module.meta.meta.tocListHeading'              => [
 				'attrName' => 'module.meta.meta.tocListHeading',
 				'preset'   => 'meta',
 			],
@@ -1362,6 +1341,497 @@ class TogglePresetAttrsMap {
 				],
 				'subName'  => 'styles.left.color',
 			],
+			'title.decoration.font.font__weightFineTune'   => [
+				'attrName' => 'title.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'weightFineTune',
+			],
+			'title.decoration.font.font__opticalSizing'    => [
+				'attrName' => 'title.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'opticalSizing',
+			],
+			'title.decoration.font.font__capitalization'   => [
+				'attrName' => 'title.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'capitalization',
+			],
+			'title.decoration.font.font__lineThickness'    => [
+				'attrName' => 'title.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'lineThickness',
+			],
+			'title.decoration.font.font__underlineOffset'  => [
+				'attrName' => 'title.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'underlineOffset',
+			],
+			'title.decoration.font.font__textWrap'         => [
+				'attrName' => 'title.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'textWrap',
+			],
+			'title.decoration.font.font__writingMode'      => [
+				'attrName' => 'title.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'writingMode',
+			],
+			'title.decoration.font.font__hyphens'          => [
+				'attrName' => 'title.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'hyphens',
+			],
+			'title.decoration.font.font__columnCount'      => [
+				'attrName' => 'title.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'columnCount',
+			],
+			'title.decoration.font.font__columnGap'        => [
+				'attrName' => 'title.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'columnGap',
+			],
+			'title.decoration.font.textEffects__strokePosition' => [
+				'attrName' => 'title.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokePosition',
+			],
+			'closedTitle.decoration.font.font__weightFineTune' => [
+				'attrName' => 'closedTitle.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'weightFineTune',
+			],
+			'closedTitle.decoration.font.font__opticalSizing' => [
+				'attrName' => 'closedTitle.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'opticalSizing',
+			],
+			'closedTitle.decoration.font.font__capitalization' => [
+				'attrName' => 'closedTitle.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'capitalization',
+			],
+			'closedTitle.decoration.font.font__lineThickness' => [
+				'attrName' => 'closedTitle.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'lineThickness',
+			],
+			'closedTitle.decoration.font.font__underlineOffset' => [
+				'attrName' => 'closedTitle.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'underlineOffset',
+			],
+			'closedTitle.decoration.font.font__textWrap'   => [
+				'attrName' => 'closedTitle.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'textWrap',
+			],
+			'closedTitle.decoration.font.font__writingMode' => [
+				'attrName' => 'closedTitle.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'writingMode',
+			],
+			'closedTitle.decoration.font.font__hyphens'    => [
+				'attrName' => 'closedTitle.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'hyphens',
+			],
+			'closedTitle.decoration.font.font__columnCount' => [
+				'attrName' => 'closedTitle.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'columnCount',
+			],
+			'closedTitle.decoration.font.font__columnGap'  => [
+				'attrName' => 'closedTitle.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'columnGap',
+			],
+			'closedTitle.decoration.font.textEffects__strokePosition' => [
+				'attrName' => 'closedTitle.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokePosition',
+			],
+			'content.decoration.bodyFont.body.font__weightFineTune' => [
+				'attrName' => 'content.decoration.bodyFont.body.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'weightFineTune',
+			],
+			'content.decoration.bodyFont.body.font__opticalSizing' => [
+				'attrName' => 'content.decoration.bodyFont.body.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'opticalSizing',
+			],
+			'content.decoration.bodyFont.body.font__capitalization' => [
+				'attrName' => 'content.decoration.bodyFont.body.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'capitalization',
+			],
+			'content.decoration.bodyFont.body.font__lineThickness' => [
+				'attrName' => 'content.decoration.bodyFont.body.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'lineThickness',
+			],
+			'content.decoration.bodyFont.body.font__underlineOffset' => [
+				'attrName' => 'content.decoration.bodyFont.body.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'underlineOffset',
+			],
+			'content.decoration.bodyFont.body.list__paragraphSpacing' => [
+				'attrName' => 'content.decoration.bodyFont.body.list',
+				'preset'   => [ 'style' ],
+				'subName'  => 'paragraphSpacing',
+			],
+			'content.decoration.bodyFont.body.font__textWrap' => [
+				'attrName' => 'content.decoration.bodyFont.body.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'textWrap',
+			],
+			'content.decoration.bodyFont.body.font__writingMode' => [
+				'attrName' => 'content.decoration.bodyFont.body.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'writingMode',
+			],
+			'content.decoration.bodyFont.body.font__hyphens' => [
+				'attrName' => 'content.decoration.bodyFont.body.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'hyphens',
+			],
+			'content.decoration.bodyFont.body.font__columnCount' => [
+				'attrName' => 'content.decoration.bodyFont.body.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'columnCount',
+			],
+			'content.decoration.bodyFont.body.font__columnGap' => [
+				'attrName' => 'content.decoration.bodyFont.body.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'columnGap',
+			],
+			'content.decoration.bodyFont.body.textEffects__strokePosition' => [
+				'attrName' => 'content.decoration.bodyFont.body.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokePosition',
+			],
+			'content.decoration.bodyFont.link.font__weightFineTune' => [
+				'attrName' => 'content.decoration.bodyFont.link.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'weightFineTune',
+			],
+			'content.decoration.bodyFont.link.font__opticalSizing' => [
+				'attrName' => 'content.decoration.bodyFont.link.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'opticalSizing',
+			],
+			'content.decoration.bodyFont.link.font__capitalization' => [
+				'attrName' => 'content.decoration.bodyFont.link.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'capitalization',
+			],
+			'content.decoration.bodyFont.link.font__lineThickness' => [
+				'attrName' => 'content.decoration.bodyFont.link.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'lineThickness',
+			],
+			'content.decoration.bodyFont.link.font__underlineOffset' => [
+				'attrName' => 'content.decoration.bodyFont.link.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'underlineOffset',
+			],
+			'content.decoration.bodyFont.link.font__textWrap' => [
+				'attrName' => 'content.decoration.bodyFont.link.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'textWrap',
+			],
+			'content.decoration.bodyFont.link.font__writingMode' => [
+				'attrName' => 'content.decoration.bodyFont.link.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'writingMode',
+			],
+			'content.decoration.bodyFont.link.font__hyphens' => [
+				'attrName' => 'content.decoration.bodyFont.link.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'hyphens',
+			],
+			'content.decoration.bodyFont.link.font__columnCount' => [
+				'attrName' => 'content.decoration.bodyFont.link.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'columnCount',
+			],
+			'content.decoration.bodyFont.link.font__columnGap' => [
+				'attrName' => 'content.decoration.bodyFont.link.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'columnGap',
+			],
+			'content.decoration.bodyFont.link.textEffects__strokePosition' => [
+				'attrName' => 'content.decoration.bodyFont.link.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokePosition',
+			],
+			'content.decoration.bodyFont.ul.font__weightFineTune' => [
+				'attrName' => 'content.decoration.bodyFont.ul.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'weightFineTune',
+			],
+			'content.decoration.bodyFont.ul.font__opticalSizing' => [
+				'attrName' => 'content.decoration.bodyFont.ul.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'opticalSizing',
+			],
+			'content.decoration.bodyFont.ul.font__capitalization' => [
+				'attrName' => 'content.decoration.bodyFont.ul.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'capitalization',
+			],
+			'content.decoration.bodyFont.ul.font__lineThickness' => [
+				'attrName' => 'content.decoration.bodyFont.ul.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'lineThickness',
+			],
+			'content.decoration.bodyFont.ul.font__underlineOffset' => [
+				'attrName' => 'content.decoration.bodyFont.ul.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'underlineOffset',
+			],
+			'content.decoration.bodyFont.ul.font__textWrap' => [
+				'attrName' => 'content.decoration.bodyFont.ul.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'textWrap',
+			],
+			'content.decoration.bodyFont.ul.font__writingMode' => [
+				'attrName' => 'content.decoration.bodyFont.ul.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'writingMode',
+			],
+			'content.decoration.bodyFont.ul.font__hyphens' => [
+				'attrName' => 'content.decoration.bodyFont.ul.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'hyphens',
+			],
+			'content.decoration.bodyFont.ul.font__columnCount' => [
+				'attrName' => 'content.decoration.bodyFont.ul.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'columnCount',
+			],
+			'content.decoration.bodyFont.ul.font__columnGap' => [
+				'attrName' => 'content.decoration.bodyFont.ul.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'columnGap',
+			],
+			'content.decoration.bodyFont.ul.list__listSpacing' => [
+				'attrName' => 'content.decoration.bodyFont.ul.list',
+				'preset'   => [ 'style' ],
+				'subName'  => 'listSpacing',
+			],
+			'content.decoration.bodyFont.ul.textEffects__strokePosition' => [
+				'attrName' => 'content.decoration.bodyFont.ul.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokePosition',
+			],
+			'content.decoration.bodyFont.ol.font__weightFineTune' => [
+				'attrName' => 'content.decoration.bodyFont.ol.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'weightFineTune',
+			],
+			'content.decoration.bodyFont.ol.font__opticalSizing' => [
+				'attrName' => 'content.decoration.bodyFont.ol.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'opticalSizing',
+			],
+			'content.decoration.bodyFont.ol.font__capitalization' => [
+				'attrName' => 'content.decoration.bodyFont.ol.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'capitalization',
+			],
+			'content.decoration.bodyFont.ol.font__lineThickness' => [
+				'attrName' => 'content.decoration.bodyFont.ol.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'lineThickness',
+			],
+			'content.decoration.bodyFont.ol.font__underlineOffset' => [
+				'attrName' => 'content.decoration.bodyFont.ol.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'underlineOffset',
+			],
+			'content.decoration.bodyFont.ol.font__textWrap' => [
+				'attrName' => 'content.decoration.bodyFont.ol.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'textWrap',
+			],
+			'content.decoration.bodyFont.ol.font__writingMode' => [
+				'attrName' => 'content.decoration.bodyFont.ol.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'writingMode',
+			],
+			'content.decoration.bodyFont.ol.font__hyphens' => [
+				'attrName' => 'content.decoration.bodyFont.ol.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'hyphens',
+			],
+			'content.decoration.bodyFont.ol.font__columnCount' => [
+				'attrName' => 'content.decoration.bodyFont.ol.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'columnCount',
+			],
+			'content.decoration.bodyFont.ol.font__columnGap' => [
+				'attrName' => 'content.decoration.bodyFont.ol.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'columnGap',
+			],
+			'content.decoration.bodyFont.ol.list__listSpacing' => [
+				'attrName' => 'content.decoration.bodyFont.ol.list',
+				'preset'   => [ 'style' ],
+				'subName'  => 'listSpacing',
+			],
+			'content.decoration.bodyFont.ol.textEffects__strokePosition' => [
+				'attrName' => 'content.decoration.bodyFont.ol.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokePosition',
+			],
+			'content.decoration.bodyFont.quote.font__weightFineTune' => [
+				'attrName' => 'content.decoration.bodyFont.quote.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'weightFineTune',
+			],
+			'content.decoration.bodyFont.quote.font__opticalSizing' => [
+				'attrName' => 'content.decoration.bodyFont.quote.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'opticalSizing',
+			],
+			'content.decoration.bodyFont.quote.font__capitalization' => [
+				'attrName' => 'content.decoration.bodyFont.quote.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'capitalization',
+			],
+			'content.decoration.bodyFont.quote.font__lineThickness' => [
+				'attrName' => 'content.decoration.bodyFont.quote.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'lineThickness',
+			],
+			'content.decoration.bodyFont.quote.font__underlineOffset' => [
+				'attrName' => 'content.decoration.bodyFont.quote.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'underlineOffset',
+			],
+			'content.decoration.bodyFont.quote.font__textWrap' => [
+				'attrName' => 'content.decoration.bodyFont.quote.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'textWrap',
+			],
+			'content.decoration.bodyFont.quote.font__writingMode' => [
+				'attrName' => 'content.decoration.bodyFont.quote.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'writingMode',
+			],
+			'content.decoration.bodyFont.quote.font__hyphens' => [
+				'attrName' => 'content.decoration.bodyFont.quote.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'hyphens',
+			],
+			'content.decoration.bodyFont.quote.font__columnCount' => [
+				'attrName' => 'content.decoration.bodyFont.quote.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'columnCount',
+			],
+			'content.decoration.bodyFont.quote.font__columnGap' => [
+				'attrName' => 'content.decoration.bodyFont.quote.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'columnGap',
+			],
+			'content.decoration.bodyFont.quote.textEffects__strokePosition' => [
+				'attrName' => 'content.decoration.bodyFont.quote.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokePosition',
+			],
+			'content.decoration.bodyFont.dropCap.font__dropCapLineSize' => [
+				'attrName' => 'content.decoration.bodyFont.dropCap.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'dropCapLineSize',
+			],
+			'content.decoration.bodyFont.dropCap.font__dropCapSpacing' => [
+				'attrName' => 'content.decoration.bodyFont.dropCap.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'dropCapSpacing',
+			],
+			'content.decoration.bodyFont.dropCap.font__family' => [
+				'attrName' => 'content.decoration.bodyFont.dropCap.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'family',
+			],
+			'content.decoration.bodyFont.dropCap.font__weight' => [
+				'attrName' => 'content.decoration.bodyFont.dropCap.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'weight',
+			],
+			'content.decoration.bodyFont.dropCap.font__weightFineTune' => [
+				'attrName' => 'content.decoration.bodyFont.dropCap.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'weightFineTune',
+			],
+			'content.decoration.bodyFont.dropCap.font__opticalSizing' => [
+				'attrName' => 'content.decoration.bodyFont.dropCap.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'opticalSizing',
+			],
+			'content.decoration.bodyFont.dropCap.font__color' => [
+				'attrName' => 'content.decoration.bodyFont.dropCap.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'color',
+			],
+			'content.decoration.bodyFont.dropCap.font__capitalization' => [
+				'attrName' => 'content.decoration.bodyFont.dropCap.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'capitalization',
+			],
+			'content.decoration.bodyFont.dropCap.font__style' => [
+				'attrName' => 'content.decoration.bodyFont.dropCap.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'style',
+			],
+			'content.decoration.bodyFont.dropCap.font__lineColor' => [
+				'attrName' => 'content.decoration.bodyFont.dropCap.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'lineColor',
+			],
+			'content.decoration.bodyFont.dropCap.font__lineThickness' => [
+				'attrName' => 'content.decoration.bodyFont.dropCap.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'lineThickness',
+			],
+			'content.decoration.bodyFont.dropCap.font__underlineOffset' => [
+				'attrName' => 'content.decoration.bodyFont.dropCap.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'underlineOffset',
+			],
+			'content.decoration.bodyFont.dropCap.font__lineStyle' => [
+				'attrName' => 'content.decoration.bodyFont.dropCap.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'lineStyle',
+			],
+			'content.decoration.bodyFont.dropCap.textShadow__style' => [
+				'attrName' => 'content.decoration.bodyFont.dropCap.textShadow',
+				'preset'   => [ 'style' ],
+				'subName'  => 'style',
+			],
+			'content.decoration.bodyFont.dropCap.textShadow__horizontal' => [
+				'attrName' => 'content.decoration.bodyFont.dropCap.textShadow',
+				'preset'   => [ 'style' ],
+				'subName'  => 'horizontal',
+			],
+			'content.decoration.bodyFont.dropCap.textShadow__vertical' => [
+				'attrName' => 'content.decoration.bodyFont.dropCap.textShadow',
+				'preset'   => [ 'style' ],
+				'subName'  => 'vertical',
+			],
+			'content.decoration.bodyFont.dropCap.textShadow__blur' => [
+				'attrName' => 'content.decoration.bodyFont.dropCap.textShadow',
+				'preset'   => [ 'style' ],
+				'subName'  => 'blur',
+			],
+			'content.decoration.bodyFont.dropCap.textShadow__color' => [
+				'attrName' => 'content.decoration.bodyFont.dropCap.textShadow',
+				'preset'   => [ 'style' ],
+				'subName'  => 'color',
+			],
+
 			'module.decoration.sizing__width'              => [
 				'attrName' => 'module.decoration.sizing',
 				'preset'   => [
@@ -1411,7 +1881,7 @@ class TogglePresetAttrsMap {
 				],
 				'subName'  => 'maxHeight',
 			],
-			'module.decoration.sizing__aspectRatio' => [
+			'module.decoration.sizing__aspectRatio'        => [
 				'attrName' => 'module.decoration.sizing',
 				'preset'   => [
 					'style',
@@ -2310,6 +2780,636 @@ class TogglePresetAttrsMap {
 				'attrName' => 'module.advanced.html',
 				'preset'   => [ 'html' ],
 				'subName'  => 'htmlBefore',
+			],
+			'title.decoration.font.textEffects__fillType'  => [
+				'attrName' => 'title.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'fillType',
+			],
+			'title.decoration.font.textEffects__gradient'  => [
+				'attrName' => 'title.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient',
+			],
+			'title.decoration.font.textEffects__gradient.type' => [
+				'attrName' => 'title.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.type',
+			],
+			'title.decoration.font.textEffects__gradient.direction' => [
+				'attrName' => 'title.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.direction',
+			],
+			'title.decoration.font.textEffects__gradient.directionRadial' => [
+				'attrName' => 'title.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.directionRadial',
+			],
+			'title.decoration.font.textEffects__gradient.repeat' => [
+				'attrName' => 'title.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.repeat',
+			],
+			'title.decoration.font.textEffects__gradient.length' => [
+				'attrName' => 'title.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.length',
+			],
+			'title.decoration.font.textEffects__imageFill.blend' => [
+				'attrName' => 'title.decoration.font.textEffects',
+				'preset'   => [ 'style', 'html' ],
+				'subName'  => 'imageFill.blend',
+			],
+			'title.decoration.font.textEffects__imageFill.height' => [
+				'attrName' => 'title.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.height',
+			],
+			'title.decoration.font.textEffects__imageFill.horizontalOffset' => [
+				'attrName' => 'title.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.horizontalOffset',
+			],
+			'title.decoration.font.textEffects__imageFill.position' => [
+				'attrName' => 'title.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.position',
+			],
+			'title.decoration.font.textEffects__imageFill.repeat' => [
+				'attrName' => 'title.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.repeat',
+			],
+			'title.decoration.font.textEffects__imageFill.size' => [
+				'attrName' => 'title.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.size',
+			],
+			'title.decoration.font.textEffects__imageFill.url' => [
+				'attrName' => 'title.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.url',
+			],
+			'title.decoration.font.textEffects__imageFill.verticalOffset' => [
+				'attrName' => 'title.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.verticalOffset',
+			],
+			'title.decoration.font.textEffects__imageFill.width' => [
+				'attrName' => 'title.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.width',
+			],
+			'title.decoration.font.textEffects__strokeColor' => [
+				'attrName' => 'title.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokeColor',
+			],
+			'title.decoration.font.textEffects__strokeWidth' => [
+				'attrName' => 'title.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokeWidth',
+			],
+			'closedTitle.decoration.font.textEffects__fillType' => [
+				'attrName' => 'closedTitle.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'fillType',
+			],
+			'closedTitle.decoration.font.textEffects__gradient' => [
+				'attrName' => 'closedTitle.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient',
+			],
+			'closedTitle.decoration.font.textEffects__gradient.type' => [
+				'attrName' => 'closedTitle.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.type',
+			],
+			'closedTitle.decoration.font.textEffects__gradient.direction' => [
+				'attrName' => 'closedTitle.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.direction',
+			],
+			'closedTitle.decoration.font.textEffects__gradient.directionRadial' => [
+				'attrName' => 'closedTitle.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.directionRadial',
+			],
+			'closedTitle.decoration.font.textEffects__gradient.repeat' => [
+				'attrName' => 'closedTitle.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.repeat',
+			],
+			'closedTitle.decoration.font.textEffects__gradient.length' => [
+				'attrName' => 'closedTitle.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.length',
+			],
+			'closedTitle.decoration.font.textEffects__imageFill.blend' => [
+				'attrName' => 'closedTitle.decoration.font.textEffects',
+				'preset'   => [ 'style', 'html' ],
+				'subName'  => 'imageFill.blend',
+			],
+			'closedTitle.decoration.font.textEffects__imageFill.height' => [
+				'attrName' => 'closedTitle.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.height',
+			],
+			'closedTitle.decoration.font.textEffects__imageFill.horizontalOffset' => [
+				'attrName' => 'closedTitle.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.horizontalOffset',
+			],
+			'closedTitle.decoration.font.textEffects__imageFill.position' => [
+				'attrName' => 'closedTitle.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.position',
+			],
+			'closedTitle.decoration.font.textEffects__imageFill.repeat' => [
+				'attrName' => 'closedTitle.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.repeat',
+			],
+			'closedTitle.decoration.font.textEffects__imageFill.size' => [
+				'attrName' => 'closedTitle.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.size',
+			],
+			'closedTitle.decoration.font.textEffects__imageFill.url' => [
+				'attrName' => 'closedTitle.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.url',
+			],
+			'closedTitle.decoration.font.textEffects__imageFill.verticalOffset' => [
+				'attrName' => 'closedTitle.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.verticalOffset',
+			],
+			'closedTitle.decoration.font.textEffects__imageFill.width' => [
+				'attrName' => 'closedTitle.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.width',
+			],
+			'closedTitle.decoration.font.textEffects__strokeColor' => [
+				'attrName' => 'closedTitle.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokeColor',
+			],
+			'closedTitle.decoration.font.textEffects__strokeWidth' => [
+				'attrName' => 'closedTitle.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokeWidth',
+			],
+			'content.decoration.bodyFont.body.textEffects__fillType' => [
+				'attrName' => 'content.decoration.bodyFont.body.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'fillType',
+			],
+			'content.decoration.bodyFont.body.textEffects__gradient' => [
+				'attrName' => 'content.decoration.bodyFont.body.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient',
+			],
+			'content.decoration.bodyFont.body.textEffects__gradient.type' => [
+				'attrName' => 'content.decoration.bodyFont.body.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.type',
+			],
+			'content.decoration.bodyFont.body.textEffects__gradient.direction' => [
+				'attrName' => 'content.decoration.bodyFont.body.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.direction',
+			],
+			'content.decoration.bodyFont.body.textEffects__gradient.directionRadial' => [
+				'attrName' => 'content.decoration.bodyFont.body.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.directionRadial',
+			],
+			'content.decoration.bodyFont.body.textEffects__gradient.repeat' => [
+				'attrName' => 'content.decoration.bodyFont.body.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.repeat',
+			],
+			'content.decoration.bodyFont.body.textEffects__gradient.length' => [
+				'attrName' => 'content.decoration.bodyFont.body.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.length',
+			],
+			'content.decoration.bodyFont.body.textEffects__imageFill.blend' => [
+				'attrName' => 'content.decoration.bodyFont.body.textEffects',
+				'preset'   => [ 'style', 'html' ],
+				'subName'  => 'imageFill.blend',
+			],
+			'content.decoration.bodyFont.body.textEffects__imageFill.height' => [
+				'attrName' => 'content.decoration.bodyFont.body.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.height',
+			],
+			'content.decoration.bodyFont.body.textEffects__imageFill.horizontalOffset' => [
+				'attrName' => 'content.decoration.bodyFont.body.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.horizontalOffset',
+			],
+			'content.decoration.bodyFont.body.textEffects__imageFill.position' => [
+				'attrName' => 'content.decoration.bodyFont.body.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.position',
+			],
+			'content.decoration.bodyFont.body.textEffects__imageFill.repeat' => [
+				'attrName' => 'content.decoration.bodyFont.body.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.repeat',
+			],
+			'content.decoration.bodyFont.body.textEffects__imageFill.size' => [
+				'attrName' => 'content.decoration.bodyFont.body.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.size',
+			],
+			'content.decoration.bodyFont.body.textEffects__imageFill.url' => [
+				'attrName' => 'content.decoration.bodyFont.body.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.url',
+			],
+			'content.decoration.bodyFont.body.textEffects__imageFill.verticalOffset' => [
+				'attrName' => 'content.decoration.bodyFont.body.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.verticalOffset',
+			],
+			'content.decoration.bodyFont.body.textEffects__imageFill.width' => [
+				'attrName' => 'content.decoration.bodyFont.body.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.width',
+			],
+			'content.decoration.bodyFont.body.textEffects__strokeColor' => [
+				'attrName' => 'content.decoration.bodyFont.body.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokeColor',
+			],
+			'content.decoration.bodyFont.body.textEffects__strokeWidth' => [
+				'attrName' => 'content.decoration.bodyFont.body.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokeWidth',
+			],
+			'content.decoration.bodyFont.link.textEffects__fillType' => [
+				'attrName' => 'content.decoration.bodyFont.link.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'fillType',
+			],
+			'content.decoration.bodyFont.link.textEffects__gradient' => [
+				'attrName' => 'content.decoration.bodyFont.link.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient',
+			],
+			'content.decoration.bodyFont.link.textEffects__gradient.type' => [
+				'attrName' => 'content.decoration.bodyFont.link.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.type',
+			],
+			'content.decoration.bodyFont.link.textEffects__gradient.direction' => [
+				'attrName' => 'content.decoration.bodyFont.link.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.direction',
+			],
+			'content.decoration.bodyFont.link.textEffects__gradient.directionRadial' => [
+				'attrName' => 'content.decoration.bodyFont.link.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.directionRadial',
+			],
+			'content.decoration.bodyFont.link.textEffects__gradient.repeat' => [
+				'attrName' => 'content.decoration.bodyFont.link.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.repeat',
+			],
+			'content.decoration.bodyFont.link.textEffects__gradient.length' => [
+				'attrName' => 'content.decoration.bodyFont.link.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.length',
+			],
+			'content.decoration.bodyFont.link.textEffects__imageFill.blend' => [
+				'attrName' => 'content.decoration.bodyFont.link.textEffects',
+				'preset'   => [ 'style', 'html' ],
+				'subName'  => 'imageFill.blend',
+			],
+			'content.decoration.bodyFont.link.textEffects__imageFill.height' => [
+				'attrName' => 'content.decoration.bodyFont.link.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.height',
+			],
+			'content.decoration.bodyFont.link.textEffects__imageFill.horizontalOffset' => [
+				'attrName' => 'content.decoration.bodyFont.link.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.horizontalOffset',
+			],
+			'content.decoration.bodyFont.link.textEffects__imageFill.position' => [
+				'attrName' => 'content.decoration.bodyFont.link.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.position',
+			],
+			'content.decoration.bodyFont.link.textEffects__imageFill.repeat' => [
+				'attrName' => 'content.decoration.bodyFont.link.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.repeat',
+			],
+			'content.decoration.bodyFont.link.textEffects__imageFill.size' => [
+				'attrName' => 'content.decoration.bodyFont.link.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.size',
+			],
+			'content.decoration.bodyFont.link.textEffects__imageFill.url' => [
+				'attrName' => 'content.decoration.bodyFont.link.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.url',
+			],
+			'content.decoration.bodyFont.link.textEffects__imageFill.verticalOffset' => [
+				'attrName' => 'content.decoration.bodyFont.link.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.verticalOffset',
+			],
+			'content.decoration.bodyFont.link.textEffects__imageFill.width' => [
+				'attrName' => 'content.decoration.bodyFont.link.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.width',
+			],
+			'content.decoration.bodyFont.link.textEffects__strokeColor' => [
+				'attrName' => 'content.decoration.bodyFont.link.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokeColor',
+			],
+			'content.decoration.bodyFont.link.textEffects__strokeWidth' => [
+				'attrName' => 'content.decoration.bodyFont.link.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokeWidth',
+			],
+			'content.decoration.bodyFont.ul.textEffects__fillType' => [
+				'attrName' => 'content.decoration.bodyFont.ul.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'fillType',
+			],
+			'content.decoration.bodyFont.ul.textEffects__gradient' => [
+				'attrName' => 'content.decoration.bodyFont.ul.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient',
+			],
+			'content.decoration.bodyFont.ul.textEffects__gradient.type' => [
+				'attrName' => 'content.decoration.bodyFont.ul.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.type',
+			],
+			'content.decoration.bodyFont.ul.textEffects__gradient.direction' => [
+				'attrName' => 'content.decoration.bodyFont.ul.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.direction',
+			],
+			'content.decoration.bodyFont.ul.textEffects__gradient.directionRadial' => [
+				'attrName' => 'content.decoration.bodyFont.ul.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.directionRadial',
+			],
+			'content.decoration.bodyFont.ul.textEffects__gradient.repeat' => [
+				'attrName' => 'content.decoration.bodyFont.ul.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.repeat',
+			],
+			'content.decoration.bodyFont.ul.textEffects__gradient.length' => [
+				'attrName' => 'content.decoration.bodyFont.ul.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.length',
+			],
+			'content.decoration.bodyFont.ul.textEffects__imageFill.blend' => [
+				'attrName' => 'content.decoration.bodyFont.ul.textEffects',
+				'preset'   => [ 'style', 'html' ],
+				'subName'  => 'imageFill.blend',
+			],
+			'content.decoration.bodyFont.ul.textEffects__imageFill.height' => [
+				'attrName' => 'content.decoration.bodyFont.ul.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.height',
+			],
+			'content.decoration.bodyFont.ul.textEffects__imageFill.horizontalOffset' => [
+				'attrName' => 'content.decoration.bodyFont.ul.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.horizontalOffset',
+			],
+			'content.decoration.bodyFont.ul.textEffects__imageFill.position' => [
+				'attrName' => 'content.decoration.bodyFont.ul.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.position',
+			],
+			'content.decoration.bodyFont.ul.textEffects__imageFill.repeat' => [
+				'attrName' => 'content.decoration.bodyFont.ul.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.repeat',
+			],
+			'content.decoration.bodyFont.ul.textEffects__imageFill.size' => [
+				'attrName' => 'content.decoration.bodyFont.ul.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.size',
+			],
+			'content.decoration.bodyFont.ul.textEffects__imageFill.url' => [
+				'attrName' => 'content.decoration.bodyFont.ul.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.url',
+			],
+			'content.decoration.bodyFont.ul.textEffects__imageFill.verticalOffset' => [
+				'attrName' => 'content.decoration.bodyFont.ul.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.verticalOffset',
+			],
+			'content.decoration.bodyFont.ul.textEffects__imageFill.width' => [
+				'attrName' => 'content.decoration.bodyFont.ul.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.width',
+			],
+			'content.decoration.bodyFont.ul.textEffects__strokeColor' => [
+				'attrName' => 'content.decoration.bodyFont.ul.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokeColor',
+			],
+			'content.decoration.bodyFont.ul.textEffects__strokeWidth' => [
+				'attrName' => 'content.decoration.bodyFont.ul.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokeWidth',
+			],
+			'content.decoration.bodyFont.ol.textEffects__fillType' => [
+				'attrName' => 'content.decoration.bodyFont.ol.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'fillType',
+			],
+			'content.decoration.bodyFont.ol.textEffects__gradient' => [
+				'attrName' => 'content.decoration.bodyFont.ol.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient',
+			],
+			'content.decoration.bodyFont.ol.textEffects__gradient.type' => [
+				'attrName' => 'content.decoration.bodyFont.ol.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.type',
+			],
+			'content.decoration.bodyFont.ol.textEffects__gradient.direction' => [
+				'attrName' => 'content.decoration.bodyFont.ol.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.direction',
+			],
+			'content.decoration.bodyFont.ol.textEffects__gradient.directionRadial' => [
+				'attrName' => 'content.decoration.bodyFont.ol.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.directionRadial',
+			],
+			'content.decoration.bodyFont.ol.textEffects__gradient.repeat' => [
+				'attrName' => 'content.decoration.bodyFont.ol.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.repeat',
+			],
+			'content.decoration.bodyFont.ol.textEffects__gradient.length' => [
+				'attrName' => 'content.decoration.bodyFont.ol.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.length',
+			],
+			'content.decoration.bodyFont.ol.textEffects__imageFill.blend' => [
+				'attrName' => 'content.decoration.bodyFont.ol.textEffects',
+				'preset'   => [ 'style', 'html' ],
+				'subName'  => 'imageFill.blend',
+			],
+			'content.decoration.bodyFont.ol.textEffects__imageFill.height' => [
+				'attrName' => 'content.decoration.bodyFont.ol.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.height',
+			],
+			'content.decoration.bodyFont.ol.textEffects__imageFill.horizontalOffset' => [
+				'attrName' => 'content.decoration.bodyFont.ol.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.horizontalOffset',
+			],
+			'content.decoration.bodyFont.ol.textEffects__imageFill.position' => [
+				'attrName' => 'content.decoration.bodyFont.ol.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.position',
+			],
+			'content.decoration.bodyFont.ol.textEffects__imageFill.repeat' => [
+				'attrName' => 'content.decoration.bodyFont.ol.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.repeat',
+			],
+			'content.decoration.bodyFont.ol.textEffects__imageFill.size' => [
+				'attrName' => 'content.decoration.bodyFont.ol.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.size',
+			],
+			'content.decoration.bodyFont.ol.textEffects__imageFill.url' => [
+				'attrName' => 'content.decoration.bodyFont.ol.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.url',
+			],
+			'content.decoration.bodyFont.ol.textEffects__imageFill.verticalOffset' => [
+				'attrName' => 'content.decoration.bodyFont.ol.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.verticalOffset',
+			],
+			'content.decoration.bodyFont.ol.textEffects__imageFill.width' => [
+				'attrName' => 'content.decoration.bodyFont.ol.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.width',
+			],
+			'content.decoration.bodyFont.ol.textEffects__strokeColor' => [
+				'attrName' => 'content.decoration.bodyFont.ol.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokeColor',
+			],
+			'content.decoration.bodyFont.ol.textEffects__strokeWidth' => [
+				'attrName' => 'content.decoration.bodyFont.ol.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokeWidth',
+			],
+			'content.decoration.bodyFont.quote.textEffects__fillType' => [
+				'attrName' => 'content.decoration.bodyFont.quote.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'fillType',
+			],
+			'content.decoration.bodyFont.quote.textEffects__gradient' => [
+				'attrName' => 'content.decoration.bodyFont.quote.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient',
+			],
+			'content.decoration.bodyFont.quote.textEffects__gradient.type' => [
+				'attrName' => 'content.decoration.bodyFont.quote.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.type',
+			],
+			'content.decoration.bodyFont.quote.textEffects__gradient.direction' => [
+				'attrName' => 'content.decoration.bodyFont.quote.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.direction',
+			],
+			'content.decoration.bodyFont.quote.textEffects__gradient.directionRadial' => [
+				'attrName' => 'content.decoration.bodyFont.quote.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.directionRadial',
+			],
+			'content.decoration.bodyFont.quote.textEffects__gradient.repeat' => [
+				'attrName' => 'content.decoration.bodyFont.quote.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.repeat',
+			],
+			'content.decoration.bodyFont.quote.textEffects__gradient.length' => [
+				'attrName' => 'content.decoration.bodyFont.quote.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.length',
+			],
+			'content.decoration.bodyFont.quote.textEffects__imageFill.blend' => [
+				'attrName' => 'content.decoration.bodyFont.quote.textEffects',
+				'preset'   => [ 'style', 'html' ],
+				'subName'  => 'imageFill.blend',
+			],
+			'content.decoration.bodyFont.quote.textEffects__imageFill.height' => [
+				'attrName' => 'content.decoration.bodyFont.quote.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.height',
+			],
+			'content.decoration.bodyFont.quote.textEffects__imageFill.horizontalOffset' => [
+				'attrName' => 'content.decoration.bodyFont.quote.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.horizontalOffset',
+			],
+			'content.decoration.bodyFont.quote.textEffects__imageFill.position' => [
+				'attrName' => 'content.decoration.bodyFont.quote.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.position',
+			],
+			'content.decoration.bodyFont.quote.textEffects__imageFill.repeat' => [
+				'attrName' => 'content.decoration.bodyFont.quote.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.repeat',
+			],
+			'content.decoration.bodyFont.quote.textEffects__imageFill.size' => [
+				'attrName' => 'content.decoration.bodyFont.quote.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.size',
+			],
+			'content.decoration.bodyFont.quote.textEffects__imageFill.url' => [
+				'attrName' => 'content.decoration.bodyFont.quote.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.url',
+			],
+			'content.decoration.bodyFont.quote.textEffects__imageFill.verticalOffset' => [
+				'attrName' => 'content.decoration.bodyFont.quote.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.verticalOffset',
+			],
+			'content.decoration.bodyFont.quote.textEffects__imageFill.width' => [
+				'attrName' => 'content.decoration.bodyFont.quote.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.width',
+			],
+			'content.decoration.bodyFont.quote.textEffects__strokeColor' => [
+				'attrName' => 'content.decoration.bodyFont.quote.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokeColor',
+			],
+			'content.decoration.bodyFont.quote.textEffects__strokeWidth' => [
+				'attrName' => 'content.decoration.bodyFont.quote.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokeWidth',
 			],
 		];
 

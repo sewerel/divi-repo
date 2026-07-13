@@ -25,6 +25,7 @@ use ET\Builder\Packages\Conversion\DeprecatedAttributeMapping;
 use ET\Builder\Packages\GlobalLayout\GlobalLayout;
 use ET\Builder\Packages\ModuleLibrary\ModuleRegistration;
 use ET\Builder\Packages\ModuleUtils\ModuleUtils;
+use ET\Builder\Packages\StyleLibrary\Declarations\Sizing\Sizing;
 use ET\Builder\Migration\Migration;
 use ET\Builder\VisualBuilder\Saving\SavingUtility;
 
@@ -795,6 +796,36 @@ class Conversion {
     }
 
 	/**
+	 * Rewrites legacy D4 free-form order-class tokens to `selector` during import conversion.
+	 *
+	 * @since ??
+	 *
+	 * @param string $css Free-form CSS.
+	 * @param string $moduleName Module name.
+	 *
+	 * @return string Rewritten CSS.
+	 */
+	private static function rewriteLegacyFreeFormOrderClassToSelector( $css, $moduleName ) {
+		$moduleOrderClassBase = ModuleUtils::get_module_order_class_name_base( $moduleName );
+
+		if ( ! $moduleOrderClassBase ) {
+			return $css;
+		}
+
+		$legacyOrderClassToken = '.' . $moduleOrderClassBase . '_';
+
+		if ( false === strpos( $css, $legacyOrderClassToken ) ) {
+			return $css;
+		}
+
+		// Regex test: https://regex101.com/r/bMmJMg/1.
+		$pattern = '/(?<![A-Za-z0-9_-])\.' . preg_quote( $moduleOrderClassBase, '/' ) . '_\d+(?![A-Za-z0-9_-])/';
+		$rewrittenCss = preg_replace( $pattern, 'selector', $css );
+
+		return null !== $rewrittenCss ? $rewrittenCss : $css;
+	}
+
+	/**
      * Sanitizes attribute values.
      *
      * Some values/keys have been changed from D4 format.
@@ -868,7 +899,8 @@ class Conversion {
 
         // Converted Gradient Unit to Gradient Length (e.g. '100vw' or '100%' or '100mm').
         if ('background_color_gradient_unit' === $desktopName) {
-            $sanitizedValue = '100' . $value;
+            $gradientUnit   = trim( (string) $value );
+            $sanitizedValue = '' === $gradientUnit ? '100%' : '100' . $gradientUnit;
         }
 
         // diff(D4, Converted Value) Update the value of Custom CSS attributes, replacing '||' with '\n'.
@@ -884,6 +916,7 @@ class Conversion {
                 // attributes hold declarations only and continue to use sanitize_css_properties().
                 if ('custom_css_free_form' === $desktopName) {
                     $sanitizedValue = SavingUtility::sanitize_css($sanitizedValue, false, false, true);
+					$sanitizedValue = self::rewriteLegacyFreeFormOrderClassToSelector( $sanitizedValue, $moduleName );
                 } else {
                     // Pass `true` to allow comments so D4 inline comments are preserved.
                     $sanitizedValue = SavingUtility::sanitize_css_properties($sanitizedValue, true);
@@ -920,6 +953,32 @@ class Conversion {
 
         return $sanitizedValue;
     }
+
+	/**
+	 * Infer gradient unit token from D4 gradient stops string.
+	 *
+	 * @since ??
+	 *
+	 * @param string $gradient_stops_value Raw D4 gradient stops value.
+	 *
+	 * @return string Inferred unit (for example `px`, `%`) or empty string.
+	 */
+	private static function get_gradient_unit_from_stops( string $gradient_stops_value ): string {
+		$supported_units = Sizing::$sizing_units;
+
+		$stop_tokens = explode( '|', $gradient_stops_value );
+		foreach ( $stop_tokens as $stop_token ) {
+			// https://regex101.com/r/MjAPC8/1/unit-tests - Regex.
+			if ( preg_match( '/\s-?\d+(?:\.\d+)?([a-z%]+)\s*$/i', trim( $stop_token ), $matches ) ) {
+				$unit = strtolower( $matches[1] );
+				if ( in_array( $unit, $supported_units, true ) ) {
+					return $unit;
+				}
+			}
+		}
+
+		return '';
+	}
 
 	public static function getAttrMap($attrs, $attrName, $moduleName) {
 		$value = $attrs[$attrName] ?? '';
@@ -1208,6 +1267,25 @@ class Conversion {
 						foreach ($expandedValues as $expandedAddress => $expandedValue) {
 							$generated["{$fullAttributePath}.{$expandedAddress}"] = $expandedValue;
 						}
+
+						// D4 can store absolute stop units (for example `6px`) in gradient stops while
+						// omitting `*_gradient_unit`. Preserve D4 rendering by inferring D5 gradient length unit.
+						if (
+							0 === strpos( $desktopName, 'background_color_gradient_stops' ) &&
+							str_ends_with( $fullAttributePath, '.gradient.stops' ) &&
+							is_string( $value )
+						) {
+							$gradient_unit_attr_name  = str_replace( '_stops', '_unit', $desktopName );
+							$gradient_unit_attr_value = $attrs[ $gradient_unit_attr_name ] ?? '';
+							$has_explicit_gradient_unit = is_string( $gradient_unit_attr_value ) && '' !== trim( $gradient_unit_attr_value );
+
+							if ( ! $has_explicit_gradient_unit ) {
+								$inferred_gradient_unit = self::get_gradient_unit_from_stops( $value );
+								if ( '' !== $inferred_gradient_unit ) {
+									$generated[ str_replace( '.stops', '.length', $fullAttributePath ) ] = '100' . $inferred_gradient_unit;
+								}
+							}
+						}
 					} else {
 						$generated[$fullAttributePath] = $expandedValues;
 					}
@@ -1231,6 +1309,19 @@ class Conversion {
 		// }
 
 		else if (is_string($moduleConversionMap['attributeMap'][$desktopName] ?? null)) {
+			// Keep inferred unitful gradient lengths from stops when D4 unit attr is empty.
+			if ( 0 === strpos( $desktopName, 'background_color_gradient_unit' ) && '' === trim( (string) $value ) ) {
+				$gradient_stops_attr_name  = str_replace( '_gradient_unit', '_gradient_stops', $attrName );
+				$gradient_stops_attr_value = $attrs[ $gradient_stops_attr_name ] ?? '';
+
+				if ( is_string( $gradient_stops_attr_value ) ) {
+					$inferred_gradient_unit = self::get_gradient_unit_from_stops( $gradient_stops_attr_value );
+					if ( '' !== $inferred_gradient_unit ) {
+						return [];
+					}
+				}
+			}
+
 			$generated[$fullAttributePath] = self::valueSanitization($value, $desktopName, $moduleName);
 		} else {
 			$generated[$fullAttributePath] = $value;
@@ -1695,7 +1786,7 @@ class Conversion {
 		// causes a silent failure that produces an empty placeholder instead of converting.
 		$content_migrated = trim( $content_raw );
 
-		if ( $run_migration ) {
+		if ( $run_migration && ! str_contains( $content_migrated, '<!-- wp:divi/layout' ) ) {
 			$content_migrated = ShortcodeMigration::maybe_migrate_legacy_shortcode( $content_migrated );
 			$content_migrated = Migration::get_instance()->migrate_content_shortcode( $content_migrated );
 		}
@@ -1732,15 +1823,22 @@ class Conversion {
 			if ( $is_global_template ) {
 				$converted = '<!-- wp:divi/placeholder -->' . $converted . '<!-- /wp:divi/placeholder -->';
 			}
-		} else if (strpos($content, '<!-- wp:divi/layout -->') !== false) {
+		} else if ( str_contains( $content, '<!-- wp:divi/layout' ) ) {
 			// parse blocks and iteratively convert them or concatenate them
 			// as $blockObjects is an array of blocks with their details.
 			$blockObjects = parse_blocks($content);  // parse_blocks is a WordPress function to parse blocks
 			$converted = '';
 			foreach ($blockObjects as $block) {
 				if ('divi/layout' === $block['blockName']) {
+					$layout_inner_html = trim( (string) ( $block['innerHTML'] ?? '' ) );
+
+					if ( false === strpos( $layout_inner_html, '[et_pb_' ) ) {
+						$converted .= serialize_block( $block );
+						continue;
+					}
+
 					$converted .= self::convertShortcodeToGbFormat(
-						self::parseShortcode( trim( $block['innerHTML'] ), $moduleCollections ),
+						self::parseShortcode( $layout_inner_html, $moduleCollections ),
 						true,
 						null,
 						$post_id,
@@ -1748,11 +1846,10 @@ class Conversion {
 						null,
 						$is_ab_testing_active
 					);
-				} else if (null === $block['blockName']) {
-					$converted .= $block['innerHTML'];
 				} else {
-					$blockName = str_replace('core/', '', $block['blockName']);
-					$converted .= "<!-- wp:{$blockName} " . json_encode($block['attrs']) . " -->{$block['innerHTML']}<!-- /wp:{$blockName} -->";
+					// Preserve non-layout blocks using WordPress serializer to keep valid block syntax.
+					// This avoids malformed output such as `<!-- wp:paragraph [] -->`.
+					$converted .= serialize_block( $block );
 				}
 			}
 		} else if (strpos($content, 'divi/shortcode-module') !== false) {
@@ -3038,6 +3135,11 @@ class Conversion {
 
 				// Divi Booster adds `db_separators` to Menu modules; discard so it does not become unknownAttributes (theme builder layouts).
 				if ( 'db_separators' === $unknownAttr ) {
+					continue;
+				}
+
+				// Rank Math FAQ Schema integration adds `rank_math_faq_schema` to Accordion modules; discard so they convert natively (issue #50441).
+				if ( 'rank_math_faq_schema' === $unknownAttr ) {
 					continue;
 				}
 

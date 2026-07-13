@@ -566,10 +566,11 @@ class WooCommerceCartProductsModule implements DependencyInterface {
 	 * @return void
 	 */
 	public static function module_styles( array $args ): void {
-		$attrs       = $args['attrs'] ?? [];
-		$elements    = $args['elements'];
-		$settings    = $args['settings'] ?? [];
-		$style_group = $args['styleGroup'] ?? 'module';
+		$attrs                       = $args['attrs'] ?? [];
+		$elements                    = $args['elements'];
+		$settings                    = $args['settings'] ?? [];
+		$style_group                 = $args['styleGroup'] ?? 'module';
+		$default_printed_style_attrs = $args['defaultPrintedStyleAttrs'] ?? [];
 
 		$base_order_class = $args['baseOrderClass'] ?? '';
 
@@ -584,6 +585,7 @@ class WooCommerceCartProductsModule implements DependencyInterface {
 		// for the button icon style declaration, preventing fallback to hard-coded padding.
 		$button_affecting_attrs = 'module' === $style_group ? [
 			'spacing' => array_replace_recursive(
+				$default_printed_style_attrs['button']['decoration']['spacing'] ?? [],
 				isset( $elements->preset_printed_style_attrs ) && is_array( $elements->preset_printed_style_attrs ) ? ( $elements->preset_printed_style_attrs['button']['decoration']['spacing'] ?? [] ) : [],
 				$attrs['button']['decoration']['spacing'] ?? []
 			),
@@ -801,6 +803,7 @@ class WooCommerceCartProductsModule implements DependencyInterface {
 									return $decoration_attrs;
 								},
 							],
+							'isMergeRecursiveProps' => true,
 						]
 					),
 					// Disabled Button.
@@ -826,6 +829,7 @@ class WooCommerceCartProductsModule implements DependencyInterface {
 									return $decoration_attrs;
 								},
 							],
+							'isMergeRecursiveProps' => true,
 						]
 					),
 					// Remove Icon.

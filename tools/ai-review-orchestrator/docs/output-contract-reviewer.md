@@ -29,6 +29,14 @@ All reviewers receive a normalized diff payload from the orchestrator.
     "implementation_plan_path": "includes/builder-5/.et/tasks/47600/47608/implementation-plan.md",
     "implementation_plan_excerpt": "## Problem Analysis ..."
   },
+  "companion_context": {
+    "status": "confirmed | not_confirmed | unknown",
+    "reason": "same_issue_same_branch_companion_detected | companion_not_found | missing_issue_context | missing_branch_context",
+    "has_confirmed_companion": true,
+    "branch_name": "issue/47608",
+    "issue_refs": [{"repoSlug": "org/repo", "issueNumber": 47608}],
+    "confirmed_companions": [{"repoSlug": "org/other-repo", "prNumber": 123}]
+  },
   "metadata": {
     "pr_url": "https://github.com/org/repo/pull/123",
     "pr_number": 123,
@@ -42,6 +50,7 @@ Notes:
 - `patch` may be a unified diff string or a list of file diffs.
 - `code_patch` excludes task workflow files under `includes/builder-5/.et/tasks/**`.
 - `task_context` is optional and used for scope alignment in change-intent review.
+- `companion_context` is optional and indicates whether same-issue/same-branch companion PR context is confirmed.
 
 ## Reviewer Output (Subagents)
 
@@ -89,6 +98,7 @@ is truly important, mark it **issue (blocking)**.
 - `comment_label` and `comment_decorations` optionally override default formatting.
 - **Default to blocking issues.** Suggestions are allowed only when high-confidence and truly high-value.
 - Avoid `note`-level feedback unless it changes how the author should interpret a blocking issue.
+- **Companion dependency exception**: when `companion_context.status=confirmed` and the concern is strictly dependency/merge-order coordination with a same-issue/same-branch companion PR, classify as non-blocking and include the `companion-dependency-order` tag.
 
 ### Conventional Comments Guidance
 
@@ -98,6 +108,7 @@ rendered PR comment. Use these labels and intent rules:
 
 - `issue` + `blocking`: the default and expected label for merge-blocking problems.
 - `suggestion` + `non-blocking`: allowed only when the suggestion materially improves correctness, safety, or maintainability, something that the author would really be thankful for and not annoyed by you raising it.
+- `issue` + `non-blocking` with tag `companion-dependency-order`: allowed only for companion-PR dependency/merge-order feedback when `companion_context.status=confirmed`.
 
 If `comment_label` is omitted, the orchestrator defaults to `issue` +
 `blocking`. If `comment_label=suggestion` and `comment_decorations` is omitted,

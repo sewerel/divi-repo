@@ -12,6 +12,8 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( 'Direct access forbidden.' );
 }
 
+use ET\Builder\Packages\StyleLibrary\Utils\GradientUtils;
+
 trait GradientBackgroundStyleDeclarationTrait {
 
 	/**
@@ -41,6 +43,6 @@ trait GradientBackgroundStyleDeclarationTrait {
 	 * @return string
 	 */
 	public static function gradient_background_style_declaration( array $gradient ): string {
-		return Background::gradient_style_declaration( $gradient );
+		return GradientUtils::gradient_style_declaration( $gradient );
 	}
 }

@@ -1106,6 +1106,28 @@ class DiviLibraryController extends RESTController {
 					default:
 						$saved_data = \ET_Builder_Library::instance()->builder_library_layouts_data( $data_type );
 
+						if ( is_wp_error( $saved_data ) ) {
+							$error_data = $saved_data->get_error_data( $saved_data->get_error_code() );
+							$status     = is_array( $error_data ) && ! empty( $error_data['status'] )
+								? absint( $error_data['status'] )
+								: 503;
+
+							if ( is_array( $error_data ) ) {
+								$error_data['failed_type'] = $data_type;
+							} else {
+								$error_data = [
+									'failed_type' => $data_type,
+								];
+							}
+
+							return self::response_error(
+								$saved_data->get_error_code(),
+								$saved_data->get_error_message(),
+								$error_data,
+								$status
+							);
+						}
+
 						if ( isset( $saved_data['layouts_data'] ) ) {
 							$data[ $data_type ] = $saved_data['layouts_data'];
 						}

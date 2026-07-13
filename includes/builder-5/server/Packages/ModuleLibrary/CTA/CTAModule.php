@@ -366,9 +366,23 @@ class CTAModule implements DependencyInterface {
 	 * @return void
 	 */
 	public static function module_styles( array $args ): void {
-		$attrs    = $args['attrs'] ?? [];
-		$elements = $args['elements'];
-		$settings = $args['settings'] ?? [];
+		$attrs                       = $args['attrs'] ?? [];
+		$elements                    = $args['elements'];
+		$settings                    = $args['settings'] ?? [];
+		$style_group                 = $args['styleGroup'] ?? 'module';
+		$default_printed_style_attrs = $args['defaultPrintedStyleAttrs'] ?? [];
+
+		$button_affecting_attrs = 'module' === $style_group
+			? [
+				'spacing' => array_replace_recursive(
+					$default_printed_style_attrs['button']['decoration']['spacing'] ?? [],
+					isset( $elements->preset_printed_style_attrs ) && is_array( $elements->preset_printed_style_attrs ) ? ( $elements->preset_printed_style_attrs['button']['decoration']['spacing'] ?? [] ) : [],
+					$attrs['button']['decoration']['spacing'] ?? []
+				),
+			]
+			: [
+				'spacing' => $attrs['button']['decoration']['spacing'] ?? [],
+			];
 
 		Style::add(
 			[
@@ -438,7 +452,13 @@ class CTAModule implements DependencyInterface {
 					// Button.
 					$elements->style(
 						[
-							'attrName' => 'button',
+							'attrName'   => 'button',
+							'styleProps' => [
+								'button' => [
+									'affectingAttrs' => $button_affecting_attrs,
+								],
+							],
+							'isMergeRecursiveProps' => true,
 						]
 					),
 

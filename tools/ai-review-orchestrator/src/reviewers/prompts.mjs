@@ -7,12 +7,48 @@ const formatRelatedPrs = (relatedPrs) => {
       const repo = pr.repoSlug || "(unknown-repo)";
       const number = pr.prNumber || "(unknown-pr)";
       const source = pr.source ? ` source=${pr.source}` : "";
+      const sources =
+        Array.isArray(pr.sources) && 0 < pr.sources.length
+          ? ` sources=${pr.sources.join(",")}`
+          : "";
       const issue = pr.issue?.repoSlug && pr.issue?.issueNumber
         ? ` issue=${pr.issue.repoSlug}#${pr.issue.issueNumber}`
         : "";
-      return `- ${repo}#${number}${source}${issue}`;
+      const companion =
+        true === pr?.companion?.sameIssue && true === pr?.companion?.sameBranch
+          ? ` companion=same-issue+same-branch branch=${pr?.companion?.branchName || "(unknown)"}`
+          : "";
+      return `- ${repo}#${number}${source}${sources}${issue}${companion}`;
     })
     .join("\n");
+};
+
+const formatCompanionContext = (companionContext) => {
+  if (null == companionContext) {
+    return "(none)";
+  }
+  const status = companionContext.status || "unknown";
+  const reason = companionContext.reason || "unknown";
+  const branchName = companionContext.branchName || "(none)";
+  const issueRefs = Array.isArray(companionContext.issueRefs)
+    ? companionContext.issueRefs
+        .map((issueRef) => `${issueRef.repoSlug}#${issueRef.issueNumber}`)
+        .join(", ")
+    : "";
+  const companions = Array.isArray(companionContext.confirmedCompanions)
+    ? companionContext.confirmedCompanions
+        .map((entry) => `${entry.repoSlug}#${entry.prNumber}`)
+        .join(", ")
+    : "";
+  return [
+    `status=${status}`,
+    `reason=${reason}`,
+    `can_evaluate=${true === companionContext.canEvaluate}`,
+    `has_confirmed_companion=${true === companionContext.hasConfirmedCompanion}`,
+    `branch=${branchName}`,
+    `issues=${issueRefs || "(none)"}`,
+    `confirmed_companions=${companions || "(none)"}`,
+  ].join("\n");
 };
 
 export const decisionPrompt = ({
@@ -27,6 +63,7 @@ export const decisionPrompt = ({
   baseRef,
   headRef,
   relatedPrs,
+  companionContext,
 }) => {
   const reviewerList = reviewers
     .map((reviewer) => `- ${reviewer.name}: ${reviewer.description}`)
@@ -46,6 +83,9 @@ export const decisionPrompt = ({
     "",
     "Related PRs:",
     formatRelatedPrs(relatedPrs),
+    "",
+    "Companion PR context:",
+    formatCompanionContext(companionContext),
     "",
     "Changed files:",
     changedFiles.map((file) => `- ${file}`).join("\n") || "(none)",
@@ -165,6 +205,7 @@ export const reviewerPrompt = ({
   focusedFiles,
   outputContract,
   relatedPrs,
+  companionContext,
 }) => [
   "You are a senior software engineer performing a pull request review.",
   "Your goal is to identify high-impact issues, not stylistic preferences.",
@@ -191,6 +232,9 @@ export const reviewerPrompt = ({
   "Related PRs:",
   formatRelatedPrs(relatedPrs),
   "",
+  "Companion PR context:",
+  formatCompanionContext(companionContext),
+  "",
   "Changed files (filtered):",
   (focusedFiles || []).map((file) => `- ${file.path}`).join("\n") || "(none)",
   `Filtered file count: ${(focusedFiles || []).length}`,
@@ -209,6 +253,12 @@ export const reviewerPrompt = ({
   "",
   "Use the summaries to guide your review and pique your interest. Only inspect diffs on-demand for files you choose after reviewing the summaries and finding something of interest.",
   "Make sure you review and base your comments on the diffs, not the summaries.",
+  "",
+  "Companion dependency classification guidance:",
+  "- If Companion PR context status=confirmed and the concern is only dependency/merge-order coordination with a same-issue/same-branch companion PR, classify it as non-blocking.",
+  "- For that case, set comment_label=issue, comment_decorations=[non-blocking], and include tag companion-dependency-order.",
+  "- If Companion PR context status is unknown or not_confirmed, keep default blocking behavior for dependency/merge-order concerns.",
+  "- Never downgrade correctness, security, performance, or contract defects because companion context exists.",
   "",
   "Conventional Comments guidance: follow the output contract for labels and decorations.",
   "",

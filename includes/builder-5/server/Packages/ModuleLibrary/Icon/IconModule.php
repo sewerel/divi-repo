@@ -194,10 +194,10 @@ class IconModule implements DependencyInterface {
 		// Extract child modules IDs using helper utility.
 		$children_ids = ChildrenUtils::extract_children_ids( $block );
 
-		$icon_inner = $attrs['icon']['innerContent']['desktop']['value'] ?? [];
+		$icon_inner   = $attrs['icon']['innerContent']['desktop']['value'] ?? [];
 		$target_value = $icon_inner['target'] ?? '';
 		$target       = 'on' === $target_value ? '_blank' : '';
-		$link         = $icon_inner['url'] ?? '';
+		$link         = HTMLUtility::resolve_url_shortcodes( $icon_inner['url'] ?? '' );
 		$title_raw    = $icon_inner['title'] ?? '';
 		$title        = is_string( $title_raw ) ? $title_raw : '';
 

@@ -9,6 +9,13 @@
       }
     },
     "decoration": {
+      "layout": {
+        "desktop": {
+          "value": {
+            "flexDirection": "row"
+          }
+        }
+      },
       "spacing": {
         "desktop": {
           "value": {

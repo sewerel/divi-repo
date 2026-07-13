@@ -1315,6 +1315,10 @@ class HTMLUtility {
 						$value = $value ? 'true' : 'false';
 					}
 
+					if ( is_string( $value ) && 'esc_url' === $default_sanitizer ) {
+						$value = self::resolve_url_shortcodes( $value );
+					}
+
 					$output[] = $escaped_key . '="' . call_user_func( $sanitizer, $value ) . '"';
 				}
 			}
@@ -1874,6 +1878,38 @@ class HTMLUtility {
 	 */
 	public static function link_target( $link_target_attrs ) {
 		return 'on' === $link_target_attrs ? '_blank' : '_self';
+	}
+
+	/**
+	 * Resolve shortcode values for URL attribute inputs.
+	 *
+	 * This resolves shortcode output before URL sanitization, so URL values are
+	 * treated as URL literals and never execute shortcode markup in HTML-attribute context.
+	 *
+	 * @since ??
+	 *
+	 * @param string $url_value Raw URL field value.
+	 *
+	 * @return string
+	 */
+	public static function resolve_url_shortcodes( string $url_value ): string {
+		if ( '' === $url_value || ! str_contains( $url_value, '[' ) || ! str_contains( $url_value, ']' ) ) {
+			return $url_value;
+		}
+
+		$resolved_value = do_shortcode( $url_value );
+
+		if ( ! is_string( $resolved_value ) ) {
+			return $url_value;
+		}
+
+		// Some URL-field preprocessors can prepend a protocol before shortcode execution.
+		// When shortcode output is already a full URL, this can produce `http://https://...`.
+		if ( preg_match( '/^(https?:\/\/)(https?:\/\/.+)$/i', $resolved_value, $duplicate_protocol_matches ) ) {
+			return $duplicate_protocol_matches[2];
+		}
+
+		return $resolved_value;
 	}
 
 	/**

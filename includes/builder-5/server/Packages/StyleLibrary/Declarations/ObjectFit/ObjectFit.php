@@ -45,9 +45,48 @@ class ObjectFit {
 		}
 
 		if ( isset( $fit_attr['objectPosition'] ) ) {
-			$style_declarations->add( 'object-position', $fit_attr['objectPosition'] );
+			$object_position = self::normalize_object_position_for_declaration( $fit_attr['objectPosition'] );
+
+			if ( null !== $object_position ) {
+				$style_declarations->add( 'object-position', $object_position );
+			}
 		}
 
 		return $style_declarations->value();
+	}
+
+	/**
+	 * Normalize object-position for {@see StyleDeclarations::add()} (string-only contract).
+	 *
+	 * Accepts canonical strings or legacy `{ x, y }` array shapes from saved markup (#49960).
+	 *
+	 * @since ??
+	 *
+	 * @param mixed $value Raw attribute value.
+	 *
+	 * @return string|null Normalized string or null when the declaration should be skipped.
+	 */
+	private static function normalize_object_position_for_declaration( $value ): ?string {
+		if ( is_string( $value ) ) {
+			$normalized_value = trim( $value );
+
+			return '' === $normalized_value ? null : $normalized_value;
+		}
+
+		if ( ! is_array( $value ) ) {
+			return null;
+		}
+
+		if (
+			isset( $value['x'], $value['y'] )
+			&& is_string( $value['x'] )
+			&& is_string( $value['y'] )
+		) {
+			$normalized_value = trim( $value['x'] . ' ' . $value['y'] );
+
+			return '' === $normalized_value ? null : $normalized_value;
+		}
+
+		return null;
 	}
 }

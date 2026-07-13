@@ -525,10 +525,14 @@ class DetectFeature {
 		}
 
 		// Handle both old content (with "enable" field) and new content (without "enable" field) for backward compatibility.
-
-		// Pattern for old content format with "enable" field - matches "gutter":{..."enable":"on"..."width":"4"...}.
-		// Test regex: https://regex101.com/r/S6MPuW/3.
-		static $pattern_gutenberg_old = '("gutter":{.*?"enable":"on"(.*?width":"(?<gutenberg_width_old>[^"]*)")?.*?}}})';
+		// Pattern for old content format with "enable" field.
+		// Matches: "gutter":{"desktop":{"value":{"enable":"on","width":"4"}}}
+		// Also:    "gutter":{"desktop":{"value":{"width":"4","enable":"on"}}}
+		// The width capture is bounded to the flat "value" object via [^}]* (no nested braces),
+		// making it order-agnostic for "enable" and "width" keys while preventing over-capture
+		// from sibling attributes (e.g. sizing.width:"100%") on single-line serialized content.
+		// Test regex: https://regex101.com/r/S6MPuW/7.
+		static $pattern_gutenberg_old = '("gutter":{.*?"value":{(?=[^}]*"enable":"on")(?:(?=[^}]*"width":"(?<gutenberg_width_old>[^"]*)"))?[^}]*}[^}]*}[^}]*})';
 
 		// Pattern for new D5 content format (without "enable" field) - uses negative lookahead to prevent old disabled gutters.
 		// Test regex: https://regex101.com/r/S6MPuW/4.

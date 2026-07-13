@@ -136,7 +136,9 @@ class TransitionUtils {
 		$animatable_options = [
 			'font-size',
 			'font-weight',
+			'font-variation-settings',
 			'color',
+			'-webkit-text-stroke-color',
 			'fill',
 			'stroke',
 			'stroke-width',
@@ -413,6 +415,8 @@ class TransitionUtils {
 				return self::get_transition_zindex_properties( $attr_value, $active_mode );
 			case 'font':
 				return self::get_transition_font_properties( $attr_value, $active_mode );
+			case 'textEffects':
+				return self::get_transition_text_effects_properties( $attr_value, $active_mode );
 			case 'textShadow':
 				return self::get_transition_text_shadow_properties( $attr_value, $active_mode );
 			case 'icon':
@@ -1438,12 +1442,74 @@ class TransitionUtils {
 							$css_properties[] = 'font-size';
 						} elseif ( 'weight' === $text_font ) {
 							$css_properties[] = 'font-weight';
+						} elseif ( 'weightFineTune' === $text_font ) {
+							$css_properties[] = 'font-weight';
+						} elseif ( 'variationSettings' === $text_font && isset( $font_values['variationSettings'] ) && is_array( $font_values['variationSettings'] ) ) {
+							$axis_tags = array_map(
+								'strtoupper',
+								array_keys( $font_values['variationSettings'] )
+							);
+
+							if ( in_array( 'WGHT', $axis_tags, true ) ) {
+								$css_properties[] = 'font-weight';
+							}
+
+							$non_weight_axis_tags = array_filter(
+								$axis_tags,
+								function ( $axis_tag ) {
+									return 'WGHT' !== $axis_tag;
+								}
+							);
+
+							if ( ! empty( $non_weight_axis_tags ) ) {
+								$css_properties[] = 'font-variation-settings';
+							}
 						} elseif ( 'letterSpacing' === $text_font ) {
 							$css_properties[] = 'letter-spacing';
 						} elseif ( 'lineHeight' === $text_font ) {
 							$css_properties[] = 'line-height';
+						} elseif ( 'strokeColor' === $text_font ) {
+							$css_properties[] = '-webkit-text-stroke-color';
 						} else {
 							$css_properties[] = $text_font;
+						}
+					}
+				}
+			}
+		}
+
+		if ( ! empty( $css_properties ) ) {
+			$css_properties = array_unique( $css_properties );
+			foreach ( $css_properties as $css_property_key => $css_property ) {
+				if ( ! in_array( $css_property, $animatable_properties, true ) ) {
+					unset( $css_properties[ $css_property_key ] );
+				}
+			}
+		}
+
+		return $css_properties;
+	}
+
+	/**
+	 * Get transition text effects properties from module attributes.
+	 *
+	 * @since ??
+	 *
+	 * @param array  $attr The module attributes.
+	 * @param string $mode The mode of the element. One of `hover`, or `sticky`.
+	 *
+	 * @return array An array of CSS properties related to text effects transitions.
+	 */
+	public static function get_transition_text_effects_properties( array $attr, string $mode ): array {
+		$css_properties        = [];
+		$animatable_properties = self::get_animatable_options_array();
+
+		if ( is_array( $attr ) && ! empty( $attr ) ) {
+			foreach ( $attr as $attr_key => $text_effect_values ) {
+				if ( $mode === $attr_key && is_array( $text_effect_values ) && ! empty( $text_effect_values ) ) {
+					foreach ( array_keys( $text_effect_values ) as $text_effect_key ) {
+						if ( 'strokeColor' === $text_effect_key ) {
+							$css_properties[] = '-webkit-text-stroke-color';
 						}
 					}
 				}

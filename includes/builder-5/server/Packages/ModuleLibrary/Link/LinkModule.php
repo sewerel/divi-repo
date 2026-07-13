@@ -15,8 +15,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 // phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase,WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- WP use snakeCase in \WP_Block_Parser_Block
 
 use ET\Builder\Framework\DependencyManagement\Interfaces\DependencyInterface;
+use ET\Builder\Framework\Utility\HTMLUtility;
 use ET\Builder\FrontEnd\BlockParser\BlockParserStore;
 use ET\Builder\FrontEnd\Module\Style;
+use ET\Builder\Packages\Module\Layout\Components\DynamicData\DynamicData;
 use ET\Builder\Packages\Module\Layout\Components\ModuleElements\ModuleElements;
 use ET\Builder\Packages\Module\Layout\Components\MultiView\MultiViewScriptData;
 use ET\Builder\Packages\Module\Module;
@@ -97,27 +99,38 @@ class LinkModule implements DependencyInterface {
 						'selector'      => $selector . ' .et_pb_link_inner .et_pb_link_text',
 						'data'          => $attrs['content']['innerContent'] ?? [],
 						'valueResolver' => function ( $value ) {
-							$text = $value['text'] ?? '';
+							$text     = $value['text'] ?? '';
+							$link_url = HTMLUtility::resolve_url_shortcodes( $value['linkUrl'] ?? '' );
 
-							if ( $text ) {
+							if ( $text && str_starts_with( $text, '$variable({' ) ) {
+								$text = DynamicData::get_processed_dynamic_data( $text );
+							} elseif ( $text ) {
 								$text = ModuleUtils::extract_link_title( $text );
 							}
 
-							return '' === $text && ! empty( $value['linkUrl'] ) ? esc_url( $value['linkUrl'] ) : esc_html( $text );
+							if ( '' === $text && ! empty( $link_url ) ) {
+								return esc_url( $link_url );
+							}
+
+							return esc_html( $text );
 						},
+						'sanitizer'     => 'et_core_esc_previously',
 					],
 				],
 				'setAttrs'      => [
 					[
-						'selector'   => $selector,
-						'data'       => [
+						'selector'      => $selector,
+						'data'          => [
 							'href' => $attrs['content']['innerContent'] ?? [],
 						],
-						'subName'    => 'linkUrl',
-						'sanitizers' => [
+						'subName'       => 'linkUrl',
+						'valueResolver' => function ( $value ) {
+							return HTMLUtility::resolve_url_shortcodes( is_string( $value ) ? $value : '' );
+						},
+						'sanitizers'    => [
 							'href' => 'esc_url',
 						],
-						'tag'        => 'a',
+						'tag'           => 'a',
 					],
 					[
 						'selector'      => $selector,
@@ -152,7 +165,9 @@ class LinkModule implements DependencyInterface {
 					[
 						'data'          => $attrs['content']['innerContent'] ?? [],
 						'valueResolver' => function ( $value ) {
-							return empty( $value['text'] ) && empty( $value['linkUrl'] ) ? 'hidden' : 'visible';
+							$link_url = HTMLUtility::resolve_url_shortcodes( $value['linkUrl'] ?? '' );
+
+							return empty( $value['text'] ) && empty( $link_url ) ? 'hidden' : 'visible';
 						},
 					],
 				],
@@ -292,7 +307,19 @@ class LinkModule implements DependencyInterface {
 		);
 		$content_style = $elements->style(
 			[
-				'attrName' => 'content',
+				'attrName'   => 'content',
+				'styleProps' => [
+					'advancedStyles' => [
+						[
+							'componentName' => 'divi/common',
+							'props'         => [
+								'selector'            => $args['orderClass'] . ' .et_pb_link_text, ' . $args['orderClass'] . ' .et_pb_link_text *',
+								'attr'                => $attrs['module']['decoration']['layout'] ?? null,
+								'declarationFunction' => [ self::class, 'text_inherit_color_style_declaration' ],
+							],
+						],
+					],
+				],
 			]
 		);
 		$icon_style    = $elements->style(
@@ -406,7 +433,7 @@ class LinkModule implements DependencyInterface {
 	public static function render_callback( array $attrs, string $child_modules_content, WP_Block $block, ModuleElements $elements ): string {
 		// Get text, link URL, and link target from content element's innerContent.
 		// For into-multiple-groups with subName, structure is: content.innerContent.desktop.value.fieldName.
-		$link_url    = $attrs['content']['innerContent']['desktop']['value']['linkUrl'] ?? '';
+		$link_url    = HTMLUtility::resolve_url_shortcodes( $attrs['content']['innerContent']['desktop']['value']['linkUrl'] ?? '' );
 		$link_target = $attrs['content']['innerContent']['desktop']['value']['linkTarget'] ?? 'off';
 		$link_text   = $attrs['content']['innerContent']['desktop']['value']['text'] ?? '';
 
@@ -473,7 +500,21 @@ class LinkModule implements DependencyInterface {
 		}
 
 		// Build content (just the text, no inner anchor tag).
-		$content = '<span class="et_pb_link_text">' . esc_html( $link_text ) . '</span>';
+		$content = $elements->render(
+			[
+				'attrName'    => 'content',
+				'attrSubName' => 'text',
+				'tagName'     => 'span',
+				'attributes'  => [
+					'class' => 'et_pb_link_text',
+				],
+			]
+		);
+
+		// Match MultiView/VB: fallback only when the text field is empty, not when rendered output is markup-only.
+		if ( '' === $link_text && ! empty( $link_url ) ) {
+			$content = '<span class="et_pb_link_text">' . esc_url( $link_url ) . '</span>';
+		}
 
 		// Build module children (style components + icon + text content).
 		// When enableWhenChildren is true, child modules content goes to wrapperChildren instead.
@@ -563,6 +604,32 @@ class LinkModule implements DependencyInterface {
 		);
 
 		$style_declarations->add( 'font-size', $size );
+
+		return $style_declarations->value();
+	}
+
+	/**
+	 * Text inherit color style declaration.
+	 *
+	 * Ensures HTML inside `.et_pb_link_text` (e.g. headings from dynamic content)
+	 * inherits Design → Text color from `.et_pb_link_inner`.
+	 *
+	 * @since ??
+	 *
+	 * @param array $params Style declaration params.
+	 *
+	 * @return string The CSS for color.
+	 */
+	public static function text_inherit_color_style_declaration( array $params ): string {
+		unset( $params );
+
+		$style_declarations = new StyleDeclarations(
+			[
+				'returnType' => 'string',
+			]
+		);
+
+		$style_declarations->add( 'color', 'inherit' );
 
 		return $style_declarations->value();
 	}

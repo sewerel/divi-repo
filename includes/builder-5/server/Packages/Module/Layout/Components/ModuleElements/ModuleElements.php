@@ -89,6 +89,17 @@ class ModuleElements {
 	public $module_attrs = [];
 
 	/**
+	 * Runtime module attributes used for classnames/script-data/render decisions.
+	 *
+	 * This can differ from `$module_attrs` when style-only attr cleanup is applied.
+	 *
+	 * @since ??
+	 *
+	 * @var array
+	 */
+	public $runtime_module_attrs = [];
+
+	/**
 	 * Module attributes original data.
 	 *
 	 * @since ??
@@ -327,6 +338,8 @@ class ModuleElements {
 	 * @type string $name              The Module name.
 	 * @type array  $moduleAttrs       A key-value pair of module attributes data where the key is
 	 *                                     the module attribute name and the value is the formatted attribute array.
+	 * @type array  $runtimeModuleAttrs Optional. Runtime module attributes for classnames/script-data/render decisions.
+	 *                                     Defaults to `moduleAttrs`.
 	 * @type array  $selectors         Optional. A key-value pair of selectors where the key is the module attribute
 	 *                                     name and the value is the selector. If not provided, the selectors will be
 	 *                                     retrieved from the module.json config file.
@@ -343,10 +356,11 @@ class ModuleElements {
 	 * }
 	 */
 	public function __construct( array $args = [] ) {
-		$this->id              = $args['id'] ?? '';
-		$this->name            = $args['name'] ?? '';
-		$this->module_attrs    = $args['moduleAttrs'] ?? [];
-		$this->module_metadata = $args['moduleMetadata'] ?? null;
+		$this->id                   = $args['id'] ?? '';
+		$this->name                 = $args['name'] ?? '';
+		$this->module_attrs         = $args['moduleAttrs'] ?? [];
+		$this->runtime_module_attrs = $args['runtimeModuleAttrs'] ?? $this->module_attrs;
+		$this->module_metadata      = $args['moduleMetadata'] ?? null;
 
 		$this->default_printed_style_attrs = $args['defaultPrintedStyleAttrs'] ?? [];
 		$this->_targeted_attributes        = $args['targetedAttributes'] ?? [];
@@ -992,12 +1006,24 @@ class ModuleElements {
 		switch ( $element_type ) {
 			case 'heading':
 				// `heading` tagName changes based on the selected heading level on `decoration.font.font` attribute.
-				$tag_name = tag_escape( $element_attr['decoration']['font']['font']['desktop']['value']['headingLevel'] ?? $tag_name );
+				// Use runtime attrs for HTML structure; style attrs may have headingLevel stripped for CSS (#48678).
+				$runtime_element_attr = $this->runtime_module_attrs[ $attr_name ] ?? [];
+				$tag_name             = tag_escape(
+					$runtime_element_attr['decoration']['font']['font']['desktop']['value']['headingLevel']
+					?? $element_attr['decoration']['font']['font']['desktop']['value']['headingLevel']
+					?? $tag_name
+				);
 				break;
 
 			case 'headingLink':
 				// `headingLink` tagName changes based on the selected heading level on `decoration.font.font` attribute.
-				$tag_name = tag_escape( $element_attr['decoration']['font']['font']['desktop']['value']['headingLevel'] ?? $tag_name );
+				// Use runtime attrs for HTML structure; style attrs may have headingLevel stripped for CSS (#48678).
+				$runtime_element_attr = $this->runtime_module_attrs[ $attr_name ] ?? [];
+				$tag_name             = tag_escape(
+					$runtime_element_attr['decoration']['font']['font']['desktop']['value']['headingLevel']
+					?? $element_attr['decoration']['font']['font']['desktop']['value']['headingLevel']
+					?? $tag_name
+				);
 
 				// $attr_sub_name is automatically set for `headingLink` type element.
 				$attr_sub_name = 'text';
@@ -1806,7 +1832,6 @@ class ModuleElements {
 
 			case 'headingLink':
 				$heading_link        = $element_attr['innerContent']['desktop']['value']['url'] ?? '';
-				$heading_text        = $element_attr['innerContent']['desktop']['value']['text'] ?? '';
 				$heading_link_target = $element_attr['innerContent']['desktop']['value']['target'] ?? '';
 
 				// Convert attrName or attr param into an instance of ModuleElementsAttr and override the children param.
@@ -1825,17 +1850,66 @@ class ModuleElements {
 					);
 				}
 
-				$children = $heading_link ? HTMLUtility::render(
-					[
-						'tag'               => 'a',
-						'attributes'        => [
-							'href'   => $heading_link,
-							'target' => 'on' === $heading_link_target ? '_blank' : null,
+				if ( $heading_link && $children instanceof ModuleElementsAttr ) {
+					$multi_view_set_content_selector = $this->_resolve_selector( $children );
+
+					$multi_view_set_content_selector_parts = explode( ',', $multi_view_set_content_selector );
+
+					$multi_view_set_content_selector_parts = array_map(
+						function ( $selector ) {
+							$selector = trim( $selector );
+
+							if ( ! str_ends_with( $selector, ' a' ) ) {
+								return $selector . ' a';
+							}
+
+							return $selector;
+						},
+						$multi_view_set_content_selector_parts
+					);
+
+					$multi_view_set_content_selector = implode( ',', $multi_view_set_content_selector_parts );
+
+					$children = $children->set(
+						[
+							'selector' => $multi_view_set_content_selector,
 						],
-						'childrenSanitizer' => 'et_core_esc_previously',
-						'children'          => $heading_text,
-					]
-				) : $children;
+						false
+					);
+
+					$children = MultiViewElement::create(
+						[
+							'id'            => $this->id,
+							'name'          => $this->name,
+							'storeInstance' => $this->store_instance,
+						]
+					)->render(
+						[
+							'tag'               => 'a',
+							'tagEscaped'        => true,
+							'attributes'        => [
+								'href'   => $heading_link,
+								'target' => 'on' === $heading_link_target ? '_blank' : null,
+							],
+							'children'          => $this->_populate_children( $children ),
+							'childrenSanitizer' => $children_sanitizer,
+						]
+					);
+				} elseif ( $heading_link ) {
+					$heading_text = $element_attr['innerContent']['desktop']['value']['text'] ?? '';
+
+					$children = HTMLUtility::render(
+						[
+							'tag'               => 'a',
+							'attributes'        => [
+								'href'   => $heading_link,
+								'target' => 'on' === $heading_link_target ? '_blank' : null,
+							],
+							'childrenSanitizer' => 'et_core_esc_previously',
+							'children'          => $heading_text,
+						]
+					);
+				}
 
 				$target_element       = $this->_map_attr_name_to_target_element( $attr_name );
 				$populated_attributes = $this->_populate_attributes( $attributes, $target_element );
@@ -2117,7 +2191,7 @@ class ModuleElements {
 		$attrs_resolver    = $args['attrsResolver'] ?? null;
 		$style_group       = $args['group'] ?? $this->_style_group;
 
-		$merged_attrs    = $this->get_merged_attrs();
+		$merged_attrs    = $this->runtime_module_attrs;
 		$decoration_attr = $merged_attrs[ $attr_name ]['decoration'] ?? [];
 		$settings        = $this->module_metadata->attributes[ $attr_name ] ?? [];
 
@@ -2174,7 +2248,7 @@ class ModuleElements {
 	 * @return void
 	 */
 	private function _set_dynamic_subgroup_script_data( string $style_group ): void {
-		$merged_attrs = $this->get_merged_attrs();
+		$merged_attrs = $this->runtime_module_attrs;
 
 		foreach ( $merged_attrs as $sub_attr_name => $sub_attr ) {
 			if ( ! is_string( $sub_attr_name ) || 'module' === $sub_attr_name || ! is_array( $sub_attr ) ) {

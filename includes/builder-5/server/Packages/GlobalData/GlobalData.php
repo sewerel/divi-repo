@@ -826,7 +826,7 @@ class GlobalData {
 
 		foreach ( $data as $type => $items ) {
 			// Ensure the type is valid and contains items.
-			if ( ! in_array( $type, [ 'numbers', 'strings', 'images', 'links', 'fonts' ], true ) || empty( $items ) ) {
+			if ( ! in_array( $type, [ 'numbers', 'strings', 'images', 'links', 'fonts', 'gradients' ], true ) || empty( $items ) ) {
 				continue;
 			}
 
@@ -849,8 +849,8 @@ class GlobalData {
 						continue;
 					}
 
-					if ( 'strings' === $type && 'value' === $param_key ) {
-						// Keep string variable value character-identical while still removing invalid UTF-8 and null bytes.
+					if ( in_array( $type, [ 'strings', 'gradients' ], true ) && 'value' === $param_key ) {
+						// Keep string and gradient variable values character-identical while still removing invalid UTF-8 and null bytes.
 						$string_value = is_scalar( $param_value ) ? wp_check_invalid_utf8( (string) $param_value ) : '';
 						$sanitized_data[ $type ][ $global_id ][ sanitize_text_field( $param_key ) ] = wp_kses_no_null( $string_value );
 					} elseif ( 'links' === $type && 'value' === $param_key ) {
@@ -919,12 +919,13 @@ class GlobalData {
 			$global_variables = is_array( $global_variables ) ? $global_variables : [];
 
 			$default_global_variables = [
-				'numbers' => [],
-				'strings' => [],
-				'images'  => [],
-				'links'   => [],
-				'colors'  => [],
-				'fonts'   => [],
+				'numbers'   => [],
+				'strings'   => [],
+				'images'    => [],
+				'links'     => [],
+				'colors'    => [],
+				'fonts'     => [],
+				'gradients' => [],
 			];
 
 			$global_variables_full = array_merge( $default_global_variables, $global_variables );
@@ -1108,7 +1109,7 @@ class GlobalData {
 		}
 
 		// Valid global variable types that can be imported.
-		$valid_types = [ 'numbers', 'strings', 'images', 'links', 'fonts' ];
+		$valid_types = [ 'numbers', 'strings', 'images', 'links', 'fonts', 'gradients' ];
 
 		foreach ( $data as $variable_data ) {
 			// Skip null or invalid entries.
@@ -1327,6 +1328,74 @@ class GlobalData {
 	 */
 	public static function is_global_variable_value( string $value ): bool {
 		return str_contains( $value, 'var(--gvid-' );
+	}
+
+	/**
+	 * Resolves a gradient variable reference into gradient settings.
+	 *
+	 * Supported input formats:
+	 * - `$variable(...)$` (gradient payload),
+	 * - `var(--gvid-...)` CSS variable reference,
+	 * - direct `gvid-...` variable id.
+	 *
+	 * @since ??
+	 *
+	 * @param string|array $value Gradient value or variable reference.
+	 * @param int          $depth Internal recursion depth.
+	 *
+	 * @return array|null
+	 */
+	public static function resolve_global_gradient_variable( $value, int $depth = 0 ): ?array {
+		if ( is_array( $value ) ) {
+			return $value;
+		}
+
+		if ( ! is_string( $value ) || '' === $value || $depth >= 10 ) {
+			return null;
+		}
+
+		if ( str_starts_with( $value, '$variable(' ) && '$' === substr( $value, -1 ) ) {
+			$variable_content = substr( $value, 10, -2 );
+			$variable_data    = json_decode( $variable_content, true );
+
+			if ( ! is_array( $variable_data ) || 'gradient' !== ( $variable_data['type'] ?? '' ) ) {
+				return null;
+			}
+
+			$referenced_variable_id = $variable_data['value']['name'] ?? '';
+			if ( is_string( $referenced_variable_id ) && str_starts_with( $referenced_variable_id, 'gvid-' ) ) {
+				$resolved_value = self::resolve_global_variable_value( "var(--{$referenced_variable_id})" );
+
+				if ( is_string( $resolved_value ) ) {
+					$resolved_gradient = self::resolve_global_gradient_variable( $resolved_value, $depth + 1 );
+
+					if ( is_array( $resolved_gradient ) && ! empty( $resolved_gradient ) ) {
+						return $resolved_gradient;
+					}
+				}
+			}
+
+			$settings = $variable_data['value']['settings'] ?? null;
+			if ( is_array( $settings ) && ! empty( $settings ) ) {
+				return $settings;
+			}
+
+			return null;
+		}
+
+		if ( str_starts_with( $value, 'var(--gvid-' ) ) {
+			$resolved_value = self::resolve_global_variable_value( $value );
+
+			if ( is_string( $resolved_value ) && $resolved_value !== $value ) {
+				return self::resolve_global_gradient_variable( $resolved_value, $depth + 1 );
+			}
+		}
+
+		if ( str_starts_with( $value, 'gvid-' ) ) {
+			return self::resolve_global_gradient_variable( "var(--{$value})", $depth + 1 );
+		}
+
+		return null;
 	}
 
 	/**

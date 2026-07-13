@@ -12,10 +12,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( 'Direct access forbidden.' );
 }
 
-use ET\Builder\Framework\Utility\ArrayUtility;
 use ET\Builder\Packages\StyleLibrary\Declarations\Background\Utils\BackgroundStyleUtils;
-use ET\Builder\Packages\StyleLibrary\Declarations\Sizing\Sizing;
 use ET\Builder\Packages\MaskAndPatternLibrary\Utils\MaskAndPatternUtils;
+use ET\Builder\Packages\StyleLibrary\Utils\GradientUtils;
 use ET\Builder\Packages\StyleLibrary\Utils\StyleDeclarations;
 
 /**
@@ -53,78 +52,7 @@ class Background {
 	 * @return string
 	 */
 	public static function gradient_style_declaration( array $gradient ): string {
-		$background_default_attr = self::$background_default_attr;
-		$type                    = null;
-		$direction               = null;
-		$stops                   = [];
-		$length_default          = $background_default_attr['gradient']['length'];
-		$unit_default            = BackgroundStyleUtils::get_unit_from_length( $length_default );
-		$length                  = isset( $gradient['length'] ) ? $gradient['length'] : $length_default;
-		$sizing_units            = Sizing::$sizing_units;
-		$unit_find               = ArrayUtility::find(
-			$sizing_units,
-			function ( $sizing_unit ) use ( $length ) {
-				return BackgroundStyleUtils::get_unit_from_length( $length ) === $sizing_unit;
-			}
-		);
-		$unit                    = null !== $unit_find ? $unit_find : $unit_default;
-		$max_length              = $length ? " {$length}" : '';
-
-		if ( isset( $gradient['stops'] ) && count( $gradient['stops'] ) >= 2 ) {
-			$stop_index = 0;
-			foreach ( $gradient['stops'] as $stop ) {
-				$color    = $stop['color'] ?? '';
-				$position = $stop['position'] ?? '';
-
-				$stop_string = "{$color} {$position}{$unit}";
-				$stops[]     = $stop_string;
-				++$stop_index;
-			}
-		}
-
-		switch ( $gradient['type'] ) {
-			case 'conic':
-				$type      = 'conic';
-				$direction = "from {$gradient['direction']} at {$gradient['directionRadial']}";
-				break;
-			case 'elliptical':
-				$type      = 'radial';
-				$direction = "ellipse at {$gradient['directionRadial']}";
-				break;
-			case 'circular':
-				$type      = 'radial';
-				$direction = "circle at {$gradient['directionRadial']}";
-				break;
-			case 'linear':
-			default:
-				$type      = 'linear';
-				$direction = $gradient['direction'];
-		}
-
-		// Apply gradient repeat (if set).
-		$type = isset( $gradient['repeat'] ) && 'on' === $gradient['repeat'] ? "repeating-{$type}" : $type;
-
-		// Check if last stop's position equals $max_length to avoid duplicate position values.
-		$should_append_max_length = true;
-		if ( ! empty( $stops ) && ! empty( $max_length ) ) {
-			$last_stop = end( $stops );
-			// Extract position+unit from last stop (from the end of the string).
-			// Format: "color position%", but color can contain spaces (e.g., "hsl(from #5b00ff calc(...) / 0.5) 100%").
-			// We need to extract the position from the END, not split on first space.
-			// Use regex to match position+unit at the end: one or more digits followed by unit (%, px, etc.).
-			if ( preg_match( '/\s+(\d+(?:\.\d+)?' . preg_quote( $unit, '/' ) . ')$/', $last_stop, $matches ) ) {
-				$last_stop_position = $matches[1];
-				// Compare with $length (not $max_length which has leading space).
-				if ( $last_stop_position === $length ) {
-					$should_append_max_length = false;
-				}
-			}
-		}
-
-		$max_length_append = $should_append_max_length ? $max_length : '';
-
-		$final_css = "{$type}-gradient({$direction}, " . implode( ',', $stops ) . "{$max_length_append})";
-		return $final_css;
+		return GradientUtils::gradient_style_declaration( $gradient );
 	}
 
 	/**

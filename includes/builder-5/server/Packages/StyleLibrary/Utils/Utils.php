@@ -57,7 +57,7 @@ class Utils {
 	 */
 	public static function resolve_dynamic_variables_recursive( $value ) {
 		if ( ! is_array( $value ) ) {
-			if ( ! is_string( $value ) || false === strpos( $value, '$variable(' ) ) {
+			if ( ! is_string( $value ) || ! str_contains( $value, '$variable(' ) ) {
 				return $value;
 			}
 			return self::resolve_dynamic_variable( $value );
@@ -86,7 +86,7 @@ class Utils {
 	public static function resolve_dynamic_variable( $value ) {
 		static $cache = [];
 
-		if ( ! is_string( $value ) || false === strpos( $value, '$variable(' ) ) {
+		if ( ! is_string( $value ) || ! str_contains( $value, '$variable(' ) ) {
 			return $value;
 		}
 
@@ -100,7 +100,7 @@ class Utils {
 				$json = $matches[1];
 
 				// Handle escaped quotes in JSON string.
-				if ( false !== strpos( $json, '\"' ) ) {
+				if ( str_contains( $json, '\"' ) ) {
 					$json = stripslashes( $json );
 				}
 
@@ -141,6 +141,77 @@ class Utils {
 	}
 
 	/**
+	 * Resolve dynamic variable and sanitize scalar value for CSS usage.
+	 *
+	 * @since ??
+	 *
+	 * @param mixed $value Raw scalar value.
+	 *
+	 * @return string
+	 */
+	public static function resolve_and_sanitize_css_scalar_value( $value ): string {
+		if ( ! is_scalar( $value ) ) {
+			return '';
+		}
+
+		$sanitized_value = self::resolve_dynamic_variable( (string) $value );
+		$sanitized_value = wp_check_invalid_utf8( $sanitized_value );
+		$sanitized_value = wp_kses_no_null( $sanitized_value );
+		$sanitized_value = wp_strip_all_tags( $sanitized_value );
+
+		return trim( $sanitized_value );
+	}
+
+	/**
+	 * Sanitize non-variable image URL and format as CSS `url(...)` reference.
+	 *
+	 * @since ??
+	 *
+	 * @param mixed $url Raw non-variable image URL value.
+	 *
+	 * @return string
+	 */
+	public static function sanitize_non_variable_image_url_css_reference( $url ): string {
+		$sanitized_url = self::resolve_and_sanitize_css_scalar_value( $url );
+
+		if ( '' === $sanitized_url ) {
+			return '';
+		}
+
+		// Regex test: https://regex101.com/r/W00es9/2.
+		if ( 1 === preg_match( '/^url\((.+)\)$/i', $sanitized_url, $matches ) ) {
+			$sanitized_url = trim( $matches[1], " \t\n\r\0\x0B\"'" );
+		}
+
+		$is_data_url = 0 === stripos( $sanitized_url, 'data:' );
+
+		// Allow only base64-encoded data:image/* payloads.
+		// Regex test: https://regex101.com/r/nVNo8f/1/.
+		if (
+			$is_data_url &&
+			1 !== preg_match(
+				'/^data:image\/(?:png|gif|jpe?g|webp|bmp|x-icon|vnd\.microsoft\.icon|avif|svg\+xml);base64,[a-z0-9+\/=\r\n]+$/i',
+				$sanitized_url
+			)
+		) {
+			return '';
+		}
+
+		$escaped_url = esc_url_raw(
+			$sanitized_url,
+			$is_data_url ? array_merge( wp_allowed_protocols(), [ 'data' ] ) : wp_allowed_protocols()
+		);
+
+		if ( '' === $escaped_url ) {
+			return '';
+		}
+
+		$css_escaped_url = addcslashes( $escaped_url, "\\'" );
+
+		return "url('{$css_escaped_url}')";
+	}
+
+	/**
 	 * Check whether a value contains a global image variable token.
 	 *
 	 * @since ??
@@ -150,12 +221,12 @@ class Utils {
 	 * @return bool Whether the value contains a global image variable token.
 	 */
 	public static function is_global_image_variable( $value ): bool {
-		if ( ! is_string( $value ) || false === strpos( $value, '$variable(' ) ) {
+		if ( ! is_string( $value ) || ! str_contains( $value, '$variable(' ) ) {
 			return false;
 		}
 
-		$global_variables       = GlobalData::get_global_variables();
-		$image_global_variables = (array) ( $global_variables['images'] ?? (object) [] );
+		$global_variables          = GlobalData::get_global_variables();
+		$image_global_variables    = (array) ( $global_variables['images'] ?? (object) [] );
 		$has_global_image_variable = false;
 
 		preg_replace_callback(
@@ -164,19 +235,19 @@ class Utils {
 				$json = $matches[1];
 
 				// Handle escaped quotes in JSON string.
-				if ( false !== strpos( $json, '\"' ) ) {
+				if ( str_contains( $json, '\"' ) ) {
 					$json = stripslashes( $json );
 				}
 
 				$decoded              = json_decode( $json, true );
 				$type                 = $decoded['type'] ?? '';
 				$name                 = $decoded['value']['name'] ?? '';
-				$is_global_image_type = 'image' === $type && is_string( $name ) && 0 === strpos( $name, 'gvid-' );
+				$is_global_image_type = 'image' === $type && is_string( $name ) && str_starts_with( $name, 'gvid-' );
 				$is_registered_image  = is_string( $name ) && isset( $image_global_variables[ $name ] );
 
 				if ( ! $is_registered_image && is_string( $name ) ) {
 					foreach ( $image_global_variables as $image_global_variable ) {
-						if ( is_array( $image_global_variable ) && $name === ( $image_global_variable['id'] ?? '' ) ) {
+						if ( is_array( $image_global_variable ) && ( $image_global_variable['id'] ?? '' ) === $name ) {
 							$is_registered_image = true;
 							break;
 						}
@@ -214,7 +285,7 @@ class Utils {
 
 		// Simplified detection: if it's a custom_meta field with color type, treat it as ACF color field.
 		// This is more reliable than trying to check ACF field types at runtime since ACF may not be loaded during server-side rendering.
-		if ( 0 === strpos( $name, 'custom_meta_' ) ) {
+		if ( str_starts_with( $name, 'custom_meta_' ) ) {
 			return true;
 		}
 
@@ -222,7 +293,7 @@ class Utils {
 		if ( 'post_meta_key' === $name ) {
 			$selected_meta_key = $settings['select_meta_key'] ?? '';
 
-			if ( 0 === strpos( $selected_meta_key, 'custom_meta_' ) ) {
+			if ( str_starts_with( $selected_meta_key, 'custom_meta_' ) ) {
 				return true;
 			}
 		}
@@ -247,14 +318,14 @@ class Utils {
 		// Extract the actual meta key based on the field name format.
 		$meta_key = '';
 
-		if ( 0 === strpos( $field_name, 'custom_meta_' ) ) {
+		if ( str_starts_with( $field_name, 'custom_meta_' ) ) {
 			// New format: remove 'custom_meta_' prefix.
 			$meta_key = str_replace( 'custom_meta_', '', $field_name );
 		} elseif ( 'post_meta_key' === $field_name ) {
 			// Legacy format: extract from settings.
 			$selected_meta_key = $settings['select_meta_key'] ?? '';
 
-			if ( 0 === strpos( $selected_meta_key, 'custom_meta_' ) ) {
+			if ( str_starts_with( $selected_meta_key, 'custom_meta_' ) ) {
 				$meta_key = str_replace( 'custom_meta_', '', $selected_meta_key );
 			} elseif ( ! empty( $settings['meta_key'] ) ) {
 				$meta_key = $settings['meta_key'];
@@ -320,7 +391,7 @@ class Utils {
 
 		// Check if it's a global color (either CSS variable or $variable syntax).
 		$global_color_id    = GlobalData::get_global_color_id_from_value( $color );
-		$is_variable_syntax = 0 === strpos( $color, '$variable(' ) && '$' === substr( $color, -1 );
+		$is_variable_syntax = str_starts_with( $color, '$variable(' ) && '$' === substr( $color, -1 );
 
 		if ( ! $global_color_id && ! $is_variable_syntax ) {
 			return $color; // Not a global color, return as-is.
@@ -335,7 +406,7 @@ class Utils {
 		}
 
 		// If still contains CSS variable, get the raw color value.
-		if ( false !== strpos( $resolved_color, 'var(--' ) && $global_color_id ) {
+		if ( str_contains( $resolved_color, 'var(--' ) && $global_color_id ) {
 			$color_data = GlobalData::get_global_color_by_id( $global_color_id );
 			if ( is_array( $color_data ) && isset( $color_data['color'] ) && ! empty( $color_data['color'] ) ) {
 				$resolved_color = $color_data['color'];
@@ -343,7 +414,7 @@ class Utils {
 		}
 
 		// If still contains nested $variable syntax, resolve recursively.
-		if ( false !== strpos( $resolved_color, '$variable(' ) ) {
+		if ( str_contains( $resolved_color, '$variable(' ) ) {
 			$resolved_color = self::resolve_global_color_to_value( $resolved_color, $depth + 1 );
 		}
 

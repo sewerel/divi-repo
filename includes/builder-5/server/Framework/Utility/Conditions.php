@@ -219,6 +219,32 @@ class Conditions {
 	}
 
 	/**
+	 * Check whether the current request is in Theme Builder context.
+	 *
+	 * This extends Theme Builder detection to REST contexts where `et_tb` query parameter
+	 * is unavailable by falling back to current post type inspection.
+	 *
+	 * @since ??
+	 *
+	 * @param int $post_id Optional. Current post ID. Default `0`.
+	 *
+	 * @return bool
+	 */
+	public static function is_tb_context( int $post_id = 0 ): bool {
+		if ( self::is_tb_enabled() ) {
+			return true;
+		}
+
+		if ( 0 < $post_id ) {
+			$post_type = get_post_type( $post_id );
+
+			return et_theme_builder_is_layout_post_type( $post_type );
+		}
+
+		return false;
+	}
+
+	/**
 	 * Check if the current page is app window of visual builder page.
 	 *
 	 * @since ??

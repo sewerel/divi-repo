@@ -1,5 +1,16 @@
 {
   "_comment": "!!! THIS IS AN AUTOMATICALLY GENERATED FILE - DO NOT EDIT !!!",
+  "module": {
+    "decoration": {
+      "layout": {
+        "desktop": {
+          "value": {
+            "flexDirection": "row"
+          }
+        }
+      }
+    }
+  },
   "trail": {
     "decoration": {
       "font": {

@@ -811,10 +811,7 @@ class SettingsDataCallbacks {
 
 			// Apply full PHP conversion for visual builder BEFORE D5-to-D5 migrations run.
 			// This ensures D4 content is converted to D5 blocks before D5 migrations try to process it.
-			$has_shortcode = false;
-			if ( '' !== $post_content && str_contains( $post_content, '[et_pb_' ) ) {
-				$has_shortcode = Shortcode::has_builder_shortcode( $post_content );
-			}
+			$has_shortcode = '' !== $post_content && str_contains( $post_content, '[' ) && Shortcode::has_builder_shortcode( $post_content );
 			if ( $post_content && $has_shortcode ) {
 				// Initialize shortcode framework (handles module loading automatically).
 				Conversion::initialize_shortcode_framework();
@@ -883,8 +880,9 @@ class SettingsDataCallbacks {
 				$request_type = 'archive';
 			}
 
-			// Set request_type on the homepage.
-			if ( is_home() ) {
+			// Set request_type on the homepage (exclude the dedicated posts page index).
+			$page_for_posts = (int) get_option( 'page_for_posts' );
+			if ( is_home() && ( is_front_page() || 0 >= $page_for_posts ) ) {
 				$request_type = 'home';
 			}
 
@@ -1394,10 +1392,7 @@ class SettingsDataCallbacks {
 		$layout_content = $layout_post->post_content;
 
 		// Apply conversion if needed (similar to post content processing).
-		$has_shortcode = false;
-		if ( '' !== $layout_content && str_contains( $layout_content, '[et_pb_' ) ) {
-			$has_shortcode = Shortcode::has_builder_shortcode( $layout_content );
-		}
+		$has_shortcode = '' !== $layout_content && str_contains( $layout_content, '[' ) && Shortcode::has_builder_shortcode( $layout_content );
 		if ( $layout_content && $has_shortcode ) {
 			Conversion::initialize_shortcode_framework();
 			do_action( 'divi_visual_builder_before_d4_conversion' );
@@ -1437,7 +1432,7 @@ class SettingsDataCallbacks {
 	 *
 	 * @return bool
 	 */
-	private static function can_use_theme_builder_for_templates(): bool {
+	private static function _can_use_theme_builder_for_templates(): bool {
 		global $post;
 
 		$post_id               = isset( $post->ID ) ? (int) $post->ID : 0;
@@ -1466,7 +1461,7 @@ class SettingsDataCallbacks {
 			$post_id                = isset( $post->ID ) ? (int) $post->ID : 0;
 			$is_tb_layout_post_type = et_theme_builder_is_layout_post_type( $post_type );
 			$is_divi_library_layout = 'et_pb_layout' === $post_type;
-			$can_use_theme_builder  = self::can_use_theme_builder_for_templates();
+			$can_use_theme_builder  = self::_can_use_theme_builder_for_templates();
 			// In Theme Builder layout editor, template areas must remain available even if the preference is disabled.
 			// In Divi Library, template areas must not be shown even if the preference is enabled.
 			$should_show_theme_builder_templates = ( $is_tb_layout_post_type || $show_theme_builder_templates ) && $can_use_theme_builder && ! $is_divi_library_layout;
@@ -1781,13 +1776,13 @@ class SettingsDataCallbacks {
 
 		if ( null === $return ) {
 			$return = [
-				'email'            => EmailAccountService::definition(),
-				'socialMedia'      => [
+				'email'          => EmailAccountService::definition(),
+				'socialMedia'    => [
 					'instagram' => [
 						'accounts' => InstagramAccountService::definition(),
 					],
 				],
-				'spamProtection'   => SpamProtectionService::definition(),
+				'spamProtection' => SpamProtectionService::definition(),
 			];
 		}
 
@@ -2143,7 +2138,7 @@ class SettingsDataCallbacks {
 				'postContentModules'             => et_theme_builder_get_post_content_modules(),
 				'hasValidBodyLayout'             => $has_valid_body_layout,
 				'themeBuilderAreas'              => $theme_builder_layouts,
-				'canUseThemeBuilderForTemplates' => self::can_use_theme_builder_for_templates(),
+				'canUseThemeBuilderForTemplates' => self::_can_use_theme_builder_for_templates(),
 			];
 		}
 
@@ -2293,7 +2288,51 @@ class SettingsDataCallbacks {
 		static $return = null;
 
 		if ( null === $return ) {
-			$return = Workspace::get_items();
+			$workspace_items        = Workspace::get_items();
+			$global_preferences     = self::preferences();
+			$preferences_workspaces = Workspace::get_preferences_workspaces();
+			$global_workspace       = is_array( $preferences_workspaces['global']['workspace'] ?? null ) ? $preferences_workspaces['global']['workspace'] : [];
+			$custom_preferences     = is_array( $preferences_workspaces['custom'] ?? null ) ? $preferences_workspaces['custom'] : [];
+			$active_workspace_id    = is_string( $preferences_workspaces['activeWorkspaceId'] ?? null ) ? $preferences_workspaces['activeWorkspaceId'] : 'global';
+			$default_workspace_id   = is_string( $preferences_workspaces['defaultWorkspaceId'] ?? null ) ? $preferences_workspaces['defaultWorkspaceId'] : 'global';
+
+			if (
+				'global' !== $active_workspace_id &&
+				! isset( $custom_preferences[ $active_workspace_id ] ) &&
+				! str_starts_with( $active_workspace_id, 'premade-' )
+			) {
+				$active_workspace_id = 'global';
+			}
+
+			if (
+				'global' !== $default_workspace_id &&
+				! isset( $custom_preferences[ $default_workspace_id ] ) &&
+				! str_starts_with( $default_workspace_id, 'premade-' )
+			) {
+				$default_workspace_id = 'global';
+			}
+
+			// On initial builder load, active workspace must follow the default workspace.
+			$active_workspace_id = $default_workspace_id;
+
+			$active_workspace_values = 'global' === $active_workspace_id
+				? $global_preferences
+				: ( is_array( $custom_preferences[ $active_workspace_id ]['settings'] ?? null ) ? $custom_preferences[ $active_workspace_id ]['settings'] : $global_preferences );
+
+			$workspace_items['preferences'] = [
+				'activeWorkspaceId'  => $active_workspace_id,
+				'defaultWorkspaceId' => $default_workspace_id,
+				'global'             => [
+					'id'        => 'global',
+					'name'      => esc_html__( 'Global', 'et_builder_5' ),
+					'settings'  => $global_preferences,
+					'workspace' => is_array( $global_workspace ) ? $global_workspace : [],
+				],
+				'custom'             => $custom_preferences,
+				'activeSettings'     => $active_workspace_values,
+			];
+
+			$return = $workspace_items;
 		}
 
 		return $return;

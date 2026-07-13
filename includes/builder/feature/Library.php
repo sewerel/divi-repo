@@ -473,11 +473,37 @@ class ET_Builder_Library {
 	}
 
 	/**
+	 * Returns a `WP_Error` when the database reported a library join-size limit failure.
+	 *
+	 * @since 5.7.2
+	 *
+	 * @return WP_Error|null
+	 */
+	protected function _get_library_query_join_limit_wp_error() {
+		global $wpdb;
+
+		if ( ! ET_Builder_Post_Query_Layouts::is_library_query_join_limit_error( $wpdb->last_error ) ) {
+			return null;
+		}
+
+		return new WP_Error(
+			'library_query_join_limit',
+			esc_html__(
+				'Your saved layouts could not be loaded because this site\'s database limits large library queries. Contact your host about increasing MySQL join limits, or reduce the number of items in the Divi Library.',
+				'et_builder'
+			),
+			array(
+				'status' => 503,
+			)
+		);
+	}
+
+	/**
 	 * Generates layouts data for the builder's library UI.
 	 *
 	 * @since 3.0.99
 	 *
-	 * @return array $data
+	 * @return array|WP_Error $data Layout data, or `WP_Error` when the library index query fails.
 	 */
 	public function builder_library_layouts_data( $library_type = 'layout' ) {
 		// This is needed to make sure ET_Builder_Element is instantiated in D5.
@@ -495,17 +521,31 @@ class ET_Builder_Library {
 
 		$extra_layout_post_type = 'layout';
 
+		global $wpdb;
+
+		// Only treat join-limit errors raised by the library index query below.
+		$wpdb->last_error = '';
+
 		$posts = $this->layouts
 			->query()
+			->is_type( $library_type )
 			->not()->with_meta( '_et_pb_built_for_post_type', $extra_layout_post_type )
 			->run(
 				array(
-					'post_status' => array( 'publish', 'trash' ),
-					'fields'      => 'ids',
+					'post_status'            => array( 'publish', 'trash' ),
+					'fields'                 => 'ids',
+					'update_post_meta_cache' => false,
+					'update_post_term_cache' => false,
 				)
 			);
 
-		$posts = is_array( $posts ) ? $posts : array( $posts );
+		$join_limit_error = $this->_get_library_query_join_limit_wp_error();
+
+		if ( $join_limit_error ) {
+			return $join_limit_error;
+		}
+
+		$posts = is_array( $posts ) ? $posts : array_filter( (array) $posts );
 
 		foreach ( $posts as $post_id ) {
 			$post   = get_post( $post_id );
@@ -914,9 +954,25 @@ class ET_Builder_Library {
 					// Do not include unused Theme Builder layouts. For more information
 					// see et_theme_builder_trash_draft_and_unused_posts().
 					->not()->with_meta( '_et_theme_builder_marked_as_unused' )
-					->run( array( 'post_status' => array( 'publish', 'draft' ) ) );
+					->run(
+						array(
+							'post_status'            => array( 'publish', 'draft' ),
+							'fields'                 => 'ids',
+							'update_post_meta_cache' => false,
+							'update_post_term_cache' => false,
+						)
+					);
 
-				$posts = self::$_->array_sort_by( is_array( $posts ) ? $posts : array( $posts ), 'post_name' );
+				$post_ids = is_array( $posts ) ? $posts : array_filter( (array) $posts );
+
+				if ( ! empty( $post_ids ) ) {
+					$post_objects = array_map( 'get_post', $post_ids );
+					$post_objects = array_filter( $post_objects );
+
+					$posts = self::$_->array_sort_by( $post_objects, 'post_name' );
+				} else {
+					$posts = array();
+				}
 
 				if ( ! empty( $posts ) ) {
 					foreach ( $posts as $post ) {
@@ -1993,7 +2049,18 @@ class ET_Builder_Library {
 
 		$library_type = isset( $_POST['et_library_type'] ) ? (string) sanitize_text_field( $_POST['et_library_type'] ) : 'layout';
 
-		wp_send_json_success( $this->builder_library_layouts_data( $library_type ) );
+		$layouts_data = $this->builder_library_layouts_data( $library_type );
+
+		if ( is_wp_error( $layouts_data ) ) {
+			wp_send_json_error(
+				array(
+					'code'    => $layouts_data->get_error_code(),
+					'message' => $layouts_data->get_error_message(),
+				)
+			);
+		}
+
+		wp_send_json_success( $layouts_data );
 	}
 
 	/**

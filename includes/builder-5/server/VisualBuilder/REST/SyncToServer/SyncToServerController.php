@@ -15,7 +15,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 use ET\Builder\Framework\Controllers\RESTController;
 use ET\Builder\Security\Security;
 use ET\Builder\VisualBuilder\Saving\SavingUtility;
-use ET\Builder\VisualBuilder\Workspace\Workspace;
 use ET\Builder\Framework\Revision\Revision;
 use ET\Builder\Packages\Module\Layout\Components\DynamicData\DynamicData;
 use ET\Builder\VisualBuilder\REST\Portability\PortabilityController;
@@ -57,11 +56,9 @@ class SyncToServerController extends RESTController {
 		$post_id                 = (int) $request->get_param( 'post_id' );
 		$post_status             = $request->get_param( 'post_status' );
 		$content                 = $request->get_param( 'content' );
-		$preferences             = $request->get_param( 'preferences' );
 		$page_settings_by_layout = $request->get_param( 'pageSettingsByLayout' );
 		$sync_type               = $request->get_param( 'syncType' );
 		$options                 = $request->get_param( 'options' );
-		$workspace               = $request->get_param( 'workspace' );
 		$prime_cache_url         = $request->get_param( 'prime_cache_url' );
 		$main_loop_type          = $request->get_param( 'mainLoopType' );
 		$main_loop_type          = is_string( $main_loop_type ) ? $main_loop_type : 'singular';
@@ -404,17 +401,6 @@ class SyncToServerController extends RESTController {
 				update_post_meta( $layout_id, '_et_pb_use_divi_5', 'on' );
 				update_post_meta( $layout_id, '_et_pb_use_builder', 'on' );
 			}
-
-			$preferences = SavingUtility::sanitize_app_preferences( $preferences );
-			foreach ( $preferences as $preference_key => $preference_value ) {
-				$option_name = 'et_fb_pref_' . $preference_key;
-				et_update_option( $option_name, $preference_value );
-			}
-
-			// Updated last used workspace.
-			$last_used_workspace = $workspace['last-used'] ?? [];
-
-			Workspace::update_item( 'builtIn', 'last-used', $last_used_workspace );
 
 			/**
 			 * Action hook to fire when the Post is updated.

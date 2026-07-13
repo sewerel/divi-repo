@@ -896,6 +896,39 @@ class ModuleUtils {
 	}
 
 	/**
+	 * Normalize background attribute groups to arrays for inheritance routines.
+	 *
+	 * Legacy or migrated content can store gradient/image groups as scalar values
+	 * (e.g. a token string). Convert known scalar forms into the expected shape.
+	 *
+	 * @since ??
+	 *
+	 * @param mixed  $attr_group Raw attribute group value.
+	 * @param string $group_name Group name (`gradient` or `image`).
+	 *
+	 * @return array
+	 */
+	private static function _normalize_background_attr_group( $attr_group, string $group_name ): array {
+		if ( is_array( $attr_group ) ) {
+			return $attr_group;
+		}
+
+		if ( ! is_string( $attr_group ) || '' === $attr_group ) {
+			return [];
+		}
+
+		if ( 'gradient' === $group_name ) {
+			return [ 'stops' => $attr_group ];
+		}
+
+		if ( 'image' === $group_name ) {
+			return [ 'url' => $attr_group ];
+		}
+
+		return [];
+	}
+
+	/**
 	 * Inherit attribute values for background.
 	 *
 	 * This function takes an array of attribute values with inherited values and a breakpoint and state
@@ -979,35 +1012,39 @@ class ModuleUtils {
 			]
 		);
 
-		$attr_values        = $attr_value_with_inherited[ $breakpoint ][ $state ] ?? [];
-		$attr_parent_values = $attr_value_with_inherited[ $inherit_breakpoint ][ $inherit_state ] ?? [];
+		$attr_values                   = $attr_value_with_inherited[ $breakpoint ][ $state ] ?? [];
+		$attr_parent_values            = $attr_value_with_inherited[ $inherit_breakpoint ][ $inherit_state ] ?? [];
+		$current_gradient_attr_group   = self::_normalize_background_attr_group( $attr_values['gradient'] ?? [], 'gradient' );
+		$inherited_gradient_attr_group = self::_normalize_background_attr_group( $attr_parent_values['gradient'] ?? [], 'gradient' );
+		$current_image_attr_group      = self::_normalize_background_attr_group( $attr_values['image'] ?? [], 'image' );
+		$inherited_image_attr_group    = self::_normalize_background_attr_group( $attr_parent_values['image'] ?? [], 'image' );
 
 		$attr_value_with_inherited[ $breakpoint ][ $state ] = self::_array_trim(
 			[
 				'color'    => $attr_values['color'] ?? $attr_parent_values['color'] ?? null,
 				'gradient' => self::_array_trim(
-					self::_is_background_attr_enabled( $attr_values['gradient'] ?? [] )
+					self::_is_background_attr_enabled( $current_gradient_attr_group )
 						? array_merge(
 							[],
-							$attr_parent_values['gradient'] ?? [],
-							$attr_values['gradient'] ?? [],
+							$inherited_gradient_attr_group,
+							$current_gradient_attr_group,
 							[
-								'stops' => $attr_values['gradient']['stops'] ?? $attr_parent_values['gradient']['stops'] ?? [],
+								'stops' => $current_gradient_attr_group['stops'] ?? $inherited_gradient_attr_group['stops'] ?? [],
 							]
 						)
 						: [
-							'enabled' => $attr_values['gradient']['enabled'] ?? 'off',
+							'enabled' => $current_gradient_attr_group['enabled'] ?? 'off',
 						]
 				),
 				'image'    => self::_array_trim(
-					self::_is_background_attr_enabled( $attr_values['image'] ?? [] )
+					self::_is_background_attr_enabled( $current_image_attr_group )
 					? array_merge(
 						[],
-						$attr_parent_values['image'] ?? [],
-						$attr_values['image'] ?? []
+						$inherited_image_attr_group,
+						$current_image_attr_group
 					)
 					: [
-						'enabled' => $attr_values['image']['enabled'] ?? 'off',
+						'enabled' => $current_image_attr_group['enabled'] ?? 'off',
 					]
 				),
 				'mask'     => self::_array_trim(
@@ -3244,6 +3281,55 @@ class ModuleUtils {
 	}
 
 	/**
+	 * Returns whether module attributes include at least one active group preset assignment.
+	 *
+	 * Mirrors Visual Builder `hasActiveGroupPreset` / `hasActiveGroupPresetAssignment`: only explicit
+	 * non-empty `groupPreset` presetId stacks count. Implicit defaults from `GlobalPreset::get_selected_group_presets()`
+	 * are excluded so server strip guards stay aligned with import and VB render paths.
+	 *
+	 * @since ??
+	 *
+	 * @param array|null $group_preset Group preset map from block attributes.
+	 *
+	 * @return bool
+	 */
+	public static function has_active_group_preset_assignment( ?array $group_preset ): bool {
+		if ( empty( $group_preset ) ) {
+			return false;
+		}
+
+		foreach ( $group_preset as $group_preset_item ) {
+			if ( ! is_array( $group_preset_item ) ) {
+				continue;
+			}
+
+			$preset_ids = GlobalPreset::normalize_preset_stack( $group_preset_item['presetId'] ?? '' );
+
+			if ( ! empty( $preset_ids ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns whether module attributes include an active module preset assignment.
+	 *
+	 * Mirrors Visual Builder `hasActiveModulePresetAssignment`: only explicit non-empty normalized
+	 * `modulePreset` stacks count (excludes `default`, `_initial`, and empty values).
+	 *
+	 * @since ??
+	 *
+	 * @param mixed $module_preset Module preset stack from block attributes.
+	 *
+	 * @return bool
+	 */
+	public static function has_active_module_preset_assignment( $module_preset ): bool {
+		return ! empty( GlobalPreset::normalize_preset_stack( $module_preset ?? '' ) );
+	}
+
+	/**
 	 * Recursively removes key-value pairs from a target array that have matching values in a reference array.
 	 *
 	 * This function compares a target array and a reference array. If a key exists in both and the values are equal,
@@ -3625,15 +3711,8 @@ class ModuleUtils {
 			]
 		);
 
-		$group_render_attrs = [];
-		foreach ( $group_presets as $group_id => $group_preset_item ) {
-			if ( $group_preset_item instanceof GlobalPresetItem ) {
-				$group_render_attrs = array_replace_recursive(
-					$group_render_attrs,
-					$group_preset_item->get_data_render_attrs()
-				);
-			}
-		}
+		$merged_group_preset_attrs = GlobalPreset::merge_selected_group_presets_by_priority( $group_presets );
+		$group_render_attrs        = $merged_group_preset_attrs['renderAttrs'];
 
 		// Get preset attributes for this module.
 		$item_preset = GlobalPreset::get_selected_preset(

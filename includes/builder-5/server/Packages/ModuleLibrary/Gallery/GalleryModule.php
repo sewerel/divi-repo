@@ -14,7 +14,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use ET\Builder\Framework\DependencyManagement\Interfaces\DependencyInterface;
 use ET\Builder\Framework\Utility\HTMLUtility;
-use ET\Builder\Framework\Utility\SanitizerUtility;
 use ET\Builder\FrontEnd\BlockParser\BlockParserStore;
 use ET\Builder\FrontEnd\Module\Style;
 use ET\Builder\Packages\IconLibrary\IconFont\Utils as IconFontUtils;
@@ -26,6 +25,7 @@ use ET\Builder\Packages\Module\Module;
 use ET\Builder\Packages\Module\Options\BoxShadow\BoxShadowClassnames;
 use ET\Builder\Packages\Module\Options\Css\CssStyle;
 use ET\Builder\Packages\Module\Options\Element\ElementClassnames;
+use ET\Builder\Packages\Module\Options\Animation\AnimationUtils;
 use ET\Builder\Packages\Module\Options\Text\TextClassnames;
 use ET\Builder\Packages\ModuleLibrary\ModuleRegistration;
 use ET\Builder\Packages\ModuleUtils\ChildrenUtils;
@@ -729,6 +729,7 @@ class GalleryModule implements DependencyInterface {
 
 		// Fullwidth is desktop only attribute.
 		$is_fullwidth = 'on' === ( $attrs['module']['advanced']['fullwidth']['desktop']['value'] ?? '' );
+		$is_animation_enabled = AnimationUtils::is_enabled( $attrs['module']['decoration']['animation'] ?? [] );
 
 		$show_pagination = ModuleUtils::has_value(
 			$attrs['pagination']['advanced']['showPagination'] ?? [],
@@ -859,10 +860,11 @@ class GalleryModule implements DependencyInterface {
 				if ( trim( $attachment->post_excerpt ) ) {
 					$image_caption .= $elements->render(
 						[
-							'attrName'         => 'caption',
-							'tagName'          => 'p',
-							'skipAttrChildren' => true,
-							'children'         => wptexturize( $attachment->post_excerpt ),
+							'attrName'          => 'caption',
+							'tagName'           => 'p',
+							'skipAttrChildren'  => true,
+							'childrenSanitizer' => 'wp_kses_post',
+							'children'          => wptexturize( $attachment->post_excerpt ),
 						]
 					);
 				}
@@ -980,6 +982,15 @@ class GalleryModule implements DependencyInterface {
 		);
 
 		$parent = BlockParserStore::get_parent( $block->parsed_block['id'], $block->parsed_block['storeInstance'] );
+		$html_attrs = [
+			'data-auto-rotate'       => $auto_rotate,
+			'data-auto-rotate-speed' => $auto_rotate_speed,
+		];
+
+		if ( $is_animation_enabled ) {
+			$html_attrs['data-divi-gallery-animation-bootstrap'] = 'on';
+			$html_attrs['style']                                 = 'opacity: 0;';
+		}
 
 		return Module::render(
 			[
@@ -989,10 +1000,7 @@ class GalleryModule implements DependencyInterface {
 
 				// VB equivalent.
 				'attrs'                    => $attrs,
-				'htmlAttrs'                => [
-					'data-auto-rotate'       => $auto_rotate,
-					'data-auto-rotate-speed' => $auto_rotate_speed,
-				],
+				'htmlAttrs'                => $html_attrs,
 				'elements'                 => $elements,
 				'defaultPrintedStyleAttrs' => $default_printed_style_attrs,
 				'id'                       => $block->parsed_block['id'],
@@ -1012,6 +1020,22 @@ class GalleryModule implements DependencyInterface {
 				) . $output_wrapper . $pagination_html,
 			]
 		);
+	}
+
+	/**
+	 * Sanitize attachment caption/excerpt HTML for gallery output.
+	 *
+	 * Mirrors Blog REST title sanitization: decode entities so allowed tags can render,
+	 * then apply `wp_kses_post()` to strip disallowed markup such as `<script>`.
+	 *
+	 * @since ??
+	 *
+	 * @param string $excerpt Attachment `post_excerpt` (caption) value.
+	 *
+	 * @return string KSES-sanitized caption HTML.
+	 */
+	public static function sanitize_attachment_excerpt( string $excerpt ): string {
+		return wp_kses_post( html_entity_decode( $excerpt, ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
 	}
 
 	/**

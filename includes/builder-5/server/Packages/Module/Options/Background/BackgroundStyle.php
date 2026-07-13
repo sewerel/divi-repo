@@ -17,6 +17,7 @@ use ET\Builder\Packages\ModuleUtils\ModuleUtils;
 use ET\Builder\Packages\StyleLibrary\Declarations\Background\Background;
 use ET\Builder\Packages\Module\Options\Background\BackgroundUtils;
 use ET\Builder\Packages\Module\Layout\Components\Style\Utils\Utils;
+use ET\Builder\Packages\StyleLibrary\Utils\GradientUtils;
 use ET\Builder\Framework\Breakpoint\Breakpoint;
 
 /**
@@ -274,14 +275,36 @@ class BackgroundStyle {
 				'defaultPrintedStyleAttr' => $args['defaultPrintedStyleAttr'] ?? [],
 				'important'               => $important,
 				'mode'                    => $mode,
-				'declarationFunction'     => function ( $props ) use ( $has_background_presets ) {
+				'declarationFunction'     => function ( $props ) use ( $has_background_presets, $default_printed_style_attr ) {
+					$breakpoint = $props['breakpoint'] ?? null;
+					$state      = $props['state'] ?? 'value';
+
+					$default_gradient = GradientUtils::get_resolved_default_gradient_for_breakpoint(
+						[
+							'defaultPrintedStyleAttr' => $default_printed_style_attr,
+							'breakpoint'              => $breakpoint,
+							'state'                   => $state,
+							'fallbackGradient'        => $props['defaultAttrValue']['gradient']
+								?? Background::$background_default_attr['gradient']
+								?? [],
+						]
+					);
+
+					$attr_value_with_default_attr = $props['attrValue'] ?? [];
+					if ( is_array( $attr_value_with_default_attr ) ) {
+						$attr_value_with_default_attr['defaultAttr'] = array_merge(
+							$attr_value_with_default_attr['defaultAttr'] ?? [],
+							[
+								'gradient' => $default_gradient,
+							]
+						);
+					}
+
 					return Background::style_declaration(
 						array_merge(
 							$props,
 							[
-								'defaultAttr'          => [
-									'gradient' => Background::$background_default_attr['gradient'] ?? null,
-								],
+								'attrValue'            => $attr_value_with_default_attr,
 								'hasBackgroundPresets' => $has_background_presets,
 							]
 						)
@@ -321,7 +344,7 @@ class BackgroundStyle {
 
 					if ( ! empty( $background_mask_color ) ) {
 						// Check if this is a complex CSS relative HSL or $variable syntax - use new method.
-						if ( false !== strpos( $background_mask_color, '$variable(' ) || false !== strpos( $background_mask_color, 'hsl(from ' ) ) {
+						if ( str_contains( $background_mask_color, '$variable(' ) || str_contains( $background_mask_color, 'hsl(from ' ) ) {
 							// Use new method for $variable syntax and CSS relative HSL.
 							$resolved_color = GlobalData::resolve_global_color_variable( $background_mask_color );
 
@@ -377,7 +400,7 @@ class BackgroundStyle {
 
 					if ( ! empty( $background_pattern_color ) ) {
 						// Check if this is a complex CSS relative HSL or $variable syntax - use new method.
-						if ( false !== strpos( $background_pattern_color, '$variable(' ) || false !== strpos( $background_pattern_color, 'hsl(from ' ) ) {
+						if ( str_contains( $background_pattern_color, '$variable(' ) || str_contains( $background_pattern_color, 'hsl(from ' ) ) {
 							// Use new method for $variable syntax and CSS relative HSL.
 							$resolved_color = GlobalData::resolve_global_color_variable( $background_pattern_color );
 

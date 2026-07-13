@@ -272,6 +272,14 @@ class IconListModule implements DependencyInterface {
 											'declarationFunction' => [ FontStyle::class, 'text_alignment_declaration' ],
 										],
 									],
+									[
+										'componentName' => 'divi/common',
+										'props'         => [
+											'selector' => $args['orderClass'] . ' .et_pb_icon_list_text *',
+											'attr'     => isset( $attrs['module'] ) ? $attrs['module'] : null,
+											'declarationFunction' => [ FontStyle::class, 'text_color_inherit_declaration' ],
+										],
+									],
 								],
 							],
 						]

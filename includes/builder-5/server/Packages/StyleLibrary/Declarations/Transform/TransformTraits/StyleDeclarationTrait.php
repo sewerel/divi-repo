@@ -19,6 +19,49 @@ trait StyleDeclarationTrait {
 	use ValueTrait;
 
 	/**
+	 * Build responsive translate resets for inherited centered origins.
+	 *
+	 * When the active responsive mode no longer has its own origin entry, the
+	 * saved position data can still carry inherited origins from another mode
+	 * such as desktop `absolute`. Only reset axes that were previously centered
+	 * so we avoid emitting broader transform changes than necessary.
+	 *
+	 * @since ??
+	 *
+	 * @param array|null  $origin Position origin values keyed by mode.
+	 * @param string|null $breakpoint Current breakpoint.
+	 *
+	 * @return array|null Array with `x` and/or `y` reset values, or null if no reset is needed.
+	 */
+	private static function _get_inherited_position_translate_resets( $origin, $breakpoint ) {
+		if ( 'desktop' === $breakpoint || ! is_array( $origin ) || empty( $origin ) ) {
+			return null;
+		}
+
+		$translates = [];
+
+		foreach ( $origin as $origin_value ) {
+			if ( ! is_string( $origin_value ) || '' === $origin_value ) {
+				continue;
+			}
+
+			$origin_parts = explode( ' ', $origin_value );
+			$vertical     = $origin_parts[0] ?? null;
+			$horizontal   = $origin_parts[1] ?? null;
+
+			if ( 'center' === $horizontal ) {
+				$translates['x'] = '0px';
+			}
+
+			if ( 'center' === $vertical ) {
+				$translates['y'] = '0px';
+			}
+		}
+
+		return ! empty( $translates ) ? $translates : null;
+	}
+
+	/**
 	 * Extract position-based translates from position attributes.
 	 * Follows D4's pattern: adds translateX/Y when position uses center alignment.
 	 *
@@ -62,7 +105,7 @@ trait StyleDeclarationTrait {
 		// Mode is checked above to be 'relative', 'absolute', or 'fixed' (not 'default').
 		$origin_value = $origin[ $mode ] ?? null;
 		if ( ! $origin_value ) {
-			return null;
+			return self::_get_inherited_position_translate_resets( $origin, $breakpoint );
 		}
 
 		$translates = [];

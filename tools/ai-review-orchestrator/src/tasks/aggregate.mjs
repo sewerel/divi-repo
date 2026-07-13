@@ -124,6 +124,43 @@ const applyConfidenceRules = (finding, thresholds) => {
   return updated;
 };
 
+const COMPANION_DEPENDENCY_TAG = "companion-dependency-order";
+
+const normalizeTag = (value) =>
+  null == value ? "" : String(value).trim().toLowerCase();
+
+const hasCompanionDependencyTag = (finding) =>
+  Array.isArray(finding?.tags) &&
+  finding.tags.some((tag) => COMPANION_DEPENDENCY_TAG === normalizeTag(tag));
+
+const applyCompanionDependencyRule = (finding, companionContext) => {
+  if (true !== companionContext?.hasConfirmedCompanion) {
+    return finding;
+  }
+  if (false === hasCompanionDependencyTag(finding)) {
+    return finding;
+  }
+  const meta = resolveConventionalMeta(finding);
+  if ("issue" !== meta.label) {
+    return finding;
+  }
+  if (meta.decorations.includes("blocking")) {
+    return {
+      ...finding,
+      comment_label: "issue",
+      comment_decorations: ["non-blocking"],
+      companionDependencyNonBlocking: true,
+    };
+  }
+  if (meta.decorations.includes("non-blocking")) {
+    return {
+      ...finding,
+      companionDependencyNonBlocking: true,
+    };
+  }
+  return finding;
+};
+
 const enforceCaps = (findings, config, sizeKey) => {
   const caps = config?.comment_label_caps || {};
   const budget = config?.comment_budget_by_size?.[sizeKey] ?? Infinity;
@@ -197,9 +234,13 @@ export const aggregateResults = task(
         if (null === filtered) {
           return;
         }
-        const updated = applyConfidenceRules(filtered, thresholds);
-        if (updated) {
-          allFindings.push({ ...updated, reviewer: result.reviewer });
+        const confidenceAdjusted = applyConfidenceRules(filtered, thresholds);
+        if (confidenceAdjusted) {
+          const companionAdjusted = applyCompanionDependencyRule(
+            confidenceAdjusted,
+            facts.companionContext
+          );
+          allFindings.push({ ...companionAdjusted, reviewer: result.reviewer });
         }
       });
     });
@@ -229,7 +270,13 @@ export const aggregateResults = task(
           0.75;
         return Number(finding?.confidence ?? 0) >= confidenceMin;
       }
-      return "issue" === meta.label && meta.decorations.includes("blocking");
+      if ("issue" === meta.label && meta.decorations.includes("blocking")) {
+        return true;
+      }
+      return (
+        "issue" === meta.label &&
+        true === finding?.companionDependencyNonBlocking
+      );
     });
     const summaryForInline = { pr_comment: { findings: prFindings } };
     const inlineResult = facts.outputPaths

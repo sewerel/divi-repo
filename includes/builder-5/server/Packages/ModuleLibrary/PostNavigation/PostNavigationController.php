@@ -133,7 +133,20 @@ class PostNavigationController extends RESTController {
 	 *
 	 * @return bool
 	 */
-	public static function index_permission(): bool {
-		return UserRole::can_current_user_use_visual_builder();
+	public static function index_permission( \WP_REST_Request $request ): bool {
+		if ( ! UserRole::can_current_user_use_visual_builder() ) {
+			return false;
+		}
+
+		$target_loop = sanitize_text_field( (string) $request->get_param( 'targetLoop' ) );
+
+		if ( '' !== $target_loop && 'main_query' !== $target_loop ) {
+			return true;
+		}
+
+		$post_id = absint( $request->get_param( 'postId' ) );
+
+		return 0 < $post_id
+			&& current_user_can( 'read_post', $post_id );
 	}
 }

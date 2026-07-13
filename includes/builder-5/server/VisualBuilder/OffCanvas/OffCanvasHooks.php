@@ -1547,7 +1547,7 @@ class OffCanvasHooks {
 		foreach ( $interactions as $interaction ) {
 			$target_class = $interaction['target']['targetClass'] ?? '';
 
-			if ( $target_class && preg_match( '/et-interaction-target-([a-zA-Z0-9]+)/', $target_class, $matches ) ) {
+			if ( $target_class && preg_match( '/et-interaction-target-([a-zA-Z0-9-]+)/', $target_class, $matches ) ) {
 				$target_id    = $matches[1];
 				$target_ids[] = $target_id;
 
@@ -1569,6 +1569,14 @@ class OffCanvasHooks {
 		$post_id = self::_get_current_post_id();
 		if ( ! $post_id ) {
 			return $parsed_block;
+		}
+
+		// Store hide-on-load target IDs before filtering for off-canvas detection.
+		// This ensures main-canvas targets are pre-hidden before JS initializes.
+		if ( ! empty( $hide_on_load_target_ids ) ) {
+			$existing_hide_on_load_target_ids = self::_get_per_post_global_value( 'divi_hide_on_load_target_ids', $post_id, [] );
+			$merged_hide_on_load_target_ids   = array_unique( array_merge( $existing_hide_on_load_target_ids, $hide_on_load_target_ids ) );
+			self::_set_per_post_global_value( 'divi_hide_on_load_target_ids', $post_id, $merged_hide_on_load_target_ids );
 		}
 
 		// Filter out targets that are on the main canvas BEFORE storing them.
@@ -1616,7 +1624,7 @@ class OffCanvasHooks {
 		$merged_target_ids   = array_unique( array_merge( $existing_target_ids, $target_ids ) );
 		self::_set_per_post_global_value( 'divi_off_canvas_target_ids', $post_id, $merged_target_ids );
 
-		// Store hide-on-load target IDs per post_id for CSS generation.
+		// Store hide-on-load target IDs per post_id for off-canvas CSS generation.
 		// These target IDs will be hidden via CSS before JavaScript executes to prevent flash.
 		if ( ! empty( $hide_on_load_target_ids ) ) {
 			$existing_hide_on_load_target_ids = self::_get_per_post_global_value( 'divi_off_canvas_hide_on_load_target_ids', $post_id, [] );
@@ -2429,9 +2437,10 @@ class OffCanvasHooks {
 		// Only inject canvases that were rendered for the canvas post (layout post in TB context).
 		// This ensures canvases are injected using the correct post ID where they're stored.
 		$rendered_canvases = self::_get_per_post_global_value( 'divi_off_canvas_rendered', $canvas_post_id, [] );
+		$hide_on_load_css  = self::_generate_hide_on_load_css();
 
 		if ( empty( $rendered_canvases ) ) {
-			return $content;
+			return $hide_on_load_css . $content;
 		}
 
 		// Get all canvas data (this will cache if not already cached).
@@ -2493,10 +2502,6 @@ class OffCanvasHooks {
 				$interaction_content .= $rendered_html;
 			}
 		}
-		// Generate CSS for hide-on-load targets to prevent flash before JavaScript executes.
-		// Collect target IDs from all posts that have rendered canvases to ensure complete coverage.
-		$hide_on_load_css = self::_generate_hide_on_load_css();
-
 		// Build final content: CSS + above + main + below + interactions.
 		// When rendering inner content, above_content and below_content will be empty.
 		$final_content = $hide_on_load_css . $above_content . $content . $below_content . $interaction_content;
@@ -2526,8 +2531,17 @@ class OffCanvasHooks {
 		// Collect hide-on-load target IDs from all posts.
 		// Use the same global storage pattern as other per-post values.
 		$all_hide_on_load_target_ids = [];
-		if ( ! empty( $GLOBALS['divi_off_canvas_hide_on_load_target_ids'] ) && is_array( $GLOBALS['divi_off_canvas_hide_on_load_target_ids'] ) ) {
-			foreach ( $GLOBALS['divi_off_canvas_hide_on_load_target_ids'] as $post_target_ids ) {
+		$hide_on_load_sources        = [
+			'divi_hide_on_load_target_ids',
+			'divi_off_canvas_hide_on_load_target_ids',
+		];
+
+		foreach ( $hide_on_load_sources as $source_key ) {
+			if ( empty( $GLOBALS[ $source_key ] ) || ! is_array( $GLOBALS[ $source_key ] ) ) {
+				continue;
+			}
+
+			foreach ( $GLOBALS[ $source_key ] as $post_target_ids ) {
 				if ( is_array( $post_target_ids ) ) {
 					$all_hide_on_load_target_ids = array_merge( $all_hide_on_load_target_ids, $post_target_ids );
 				}
@@ -2754,7 +2768,7 @@ class OffCanvasHooks {
 						foreach ( $interactions as $interaction ) {
 							$target_class = $interaction['target']['targetClass'] ?? '';
 
-							if ( $target_class && preg_match( '/et-interaction-target-([a-zA-Z0-9]+)/', $target_class, $matches ) ) {
+							if ( $target_class && preg_match( '/et-interaction-target-([a-zA-Z0-9-]+)/', $target_class, $matches ) ) {
 								$target_ids[] = $matches[1];
 							}
 						}

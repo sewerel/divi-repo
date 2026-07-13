@@ -44,6 +44,7 @@ class SvgAllowedList {
 			'mask'              => true,
 			'filter'            => true,
 			'id'                => true,
+			'serif:id'          => true,
 		];
 	}
 
@@ -57,6 +58,7 @@ class SvgAllowedList {
 			self::_common_attributes(),
 			[
 				'xmlns'               => true,
+				'xmlns:serif'         => true,
 				'xmlns:xlink'         => true,
 				'viewBox'             => true,
 				'viewbox'             => true,

@@ -36,6 +36,18 @@
             "color": "#ffffff"
           }
         }
+      },
+      "layout": {
+        "tablet": {
+          "value": {
+            "justifyContent": "space-between"
+          }
+        },
+        "phone": {
+          "value": {
+            "justifyContent": "space-between"
+          }
+        }
       }
     }
   },

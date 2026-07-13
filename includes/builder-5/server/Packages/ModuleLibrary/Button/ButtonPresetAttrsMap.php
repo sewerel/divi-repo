@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	die( 'Direct access forbidden.' );
 }
 
+use ET\Builder\Packages\Module\Options\TextEffects\TextEffectsPresetAttrsMap;
 
 /**
  * Class ButtonPresetAttrsMap
@@ -61,7 +62,7 @@ class ButtonPresetAttrsMap {
 			'button.decoration.button.decoration.button__icon.onHover',
 			'button.decoration.button.decoration.button__alignment',
 			'button.decoration.button.decoration.background__color',
-			'button.decoration.button.decoration.background__gradient.stops',
+			'button.decoration.button.decoration.background__gradient',
 			'button.decoration.button.decoration.background__gradient.enabled',
 			'button.decoration.button.decoration.background__gradient.type',
 			'button.decoration.button.decoration.background__gradient.direction',
@@ -174,6 +175,35 @@ class ButtonPresetAttrsMap {
 			'button.decoration.font.font__textAlign',
 			'button.decoration.spacing__margin',
 			'button.decoration.spacing__padding',
+			'button.decoration.button.decoration.font.textEffects__fillType',
+			'button.decoration.button.decoration.font.textEffects__gradient',
+			'button.decoration.button.decoration.font.textEffects__gradient.type',
+			'button.decoration.button.decoration.font.textEffects__gradient.direction',
+			'button.decoration.button.decoration.font.textEffects__gradient.directionRadial',
+			'button.decoration.button.decoration.font.textEffects__gradient.repeat',
+			'button.decoration.button.decoration.font.textEffects__gradient.length',
+			'button.decoration.button.decoration.font.textEffects__imageFill.blend',
+			'button.decoration.button.decoration.font.textEffects__imageFill.height',
+			'button.decoration.button.decoration.font.textEffects__imageFill.horizontalOffset',
+			'button.decoration.button.decoration.font.textEffects__imageFill.position',
+			'button.decoration.button.decoration.font.textEffects__imageFill.repeat',
+			'button.decoration.button.decoration.font.textEffects__imageFill.size',
+			'button.decoration.button.decoration.font.textEffects__imageFill.url',
+			'button.decoration.button.decoration.font.textEffects__imageFill.verticalOffset',
+			'button.decoration.button.decoration.font.textEffects__imageFill.width',
+			'button.decoration.button.decoration.font.textEffects__strokeColor',
+			'button.decoration.button.decoration.font.textEffects__strokeWidth',
+			'button.decoration.button.decoration.font.font__weightFineTune',
+			'button.decoration.button.decoration.font.font__opticalSizing',
+			'button.decoration.button.decoration.font.font__lineThickness',
+			'button.decoration.button.decoration.font.font__underlineOffset',
+			'button.decoration.button.decoration.font.font__textWrap',
+			'button.decoration.button.decoration.font.font__writingMode',
+			'button.decoration.button.decoration.font.font__hyphens',
+			'button.decoration.button.decoration.font.font__columnCount',
+			'button.decoration.button.decoration.font.font__columnGap',
+			'button.decoration.button.decoration.font.font__capitalization',
+			'button.decoration.button.decoration.font.textEffects__strokePosition',
 		];
 
 		foreach ( $keys_to_remove as $key ) {
@@ -182,6 +212,7 @@ class ButtonPresetAttrsMap {
 
 		return array_merge(
 			$map,
+			TextEffectsPresetAttrsMap::get_map( 'button.decoration.font' ),
 			[
 				'button.innerContent__text'                => [
 					'attrName' => 'button.innerContent',

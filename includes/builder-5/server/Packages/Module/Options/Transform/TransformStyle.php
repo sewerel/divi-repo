@@ -81,6 +81,7 @@ class TransformStyle {
 		$args = wp_parse_args(
 			$args,
 			[
+				'attr'                            => [],
 				'selectors'                       => [],
 				'propertySelectors'               => [],
 				'selectorFunction'                => null,

@@ -195,6 +195,7 @@ export const buildFactsPayload = (facts, options = {}) => {
     prMeta,
     repoSlug: facts.repoSlug,
     relatedPrs: facts.relatedPrs || [],
+    companionContext: facts.companionContext || null,
     changedFiles: facts.changedFiles,
     codeFiles: facts.codeFiles,
     taskFiles: facts.taskFiles,

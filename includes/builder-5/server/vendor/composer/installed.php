@@ -3,7 +3,7 @@
         'name' => 'divi/server',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'f04f247e9299d56e9f38dab58229b2e1d97242c3',
+        'reference' => '883fc4bfb10e0cb0b15cc7d93a0b2bd1862b65a1',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'divi/server' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'f04f247e9299d56e9f38dab58229b2e1d97242c3',
+            'reference' => '883fc4bfb10e0cb0b15cc7d93a0b2bd1862b65a1',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

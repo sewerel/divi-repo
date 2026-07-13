@@ -73,7 +73,7 @@ class DynamicContentOptionTermDescription extends DynamicContentOptionBase imple
 	 * @return array The registered options array.
 	 */
 	public function register_option_callback( array $options, int $post_id, string $context ): array {
-		$is_tb_enabled = Conditions::is_tb_enabled();
+		$is_tb_enabled = Conditions::is_tb_context( $post_id );
 
 		if ( ! isset( $options[ $this->get_name() ] ) && $is_tb_enabled ) {
 			$options[ $this->get_name() ] = [

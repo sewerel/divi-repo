@@ -83,6 +83,65 @@ class SocialMediaFollowItemModule implements DependencyInterface {
 	}
 
 	/**
+	 * Build merged HTML attributes for icon and follow-button anchor elements.
+	 *
+	 * Merges iconLink-target custom attributes and legacy main-bucket rel/target for backward compatibility.
+	 *
+	 * @since ??
+	 *
+	 * @param array  $attrs            Block attributes.
+	 * @param string $item_url           Social network link URL.
+	 * @param string $target             Link target from parent or custom attributes.
+	 * @param string $formatted_title    Accessible link title.
+	 * @param string $link_class         Anchor CSS class (icon or follow_button).
+	 *
+	 * @return array Merged anchor attributes.
+	 */
+	private static function build_link_attributes( array $attrs, string $item_url, string $target, string $formatted_title, string $link_class ): array {
+		$link_attributes = [
+			'href'   => $item_url,
+			'class'  => $link_class,
+			'title'  => $formatted_title,
+			'target' => $target,
+			'rel'    => 'noopener',
+		];
+
+		$custom_attributes_data = $attrs['module']['decoration']['attributes'] ?? [];
+
+		if ( empty( $custom_attributes_data ) ) {
+			return $link_attributes;
+		}
+
+		$separated_attributes = AttributeUtils::separate_attributes_by_target_element( $custom_attributes_data );
+		$iconlink_attributes  = $separated_attributes['iconLink'] ?? [];
+		$main_attributes      = $separated_attributes['main'] ?? [];
+
+		foreach ( $iconlink_attributes as $name => $value ) {
+			if ( isset( $link_attributes[ $name ] ) ) {
+				$link_attributes[ $name ] = AttributeUtils::merge_attribute_values( $name, $link_attributes[ $name ], $value );
+			} else {
+				$link_attributes[ $name ] = $value;
+			}
+		}
+
+		$legacy_link_keys = [ 'rel', 'target' ];
+
+		foreach ( $legacy_link_keys as $name ) {
+			if ( ! isset( $main_attributes[ $name ] ) ) {
+				continue;
+			}
+
+			if ( isset( $link_attributes[ $name ] ) ) {
+				$link_attributes[ $name ] = AttributeUtils::merge_attribute_values( $name, $link_attributes[ $name ], $main_attributes[ $name ] );
+			} else {
+				$link_attributes[ $name ] = $main_attributes[ $name ];
+			}
+		}
+
+		return $link_attributes;
+	}
+
+	/**
 	 * Social Media Follow Network render callback which outputs server side rendered HTML on the Front-End.
 	 *
 	 * This function is equivalent of JS function SocialMediaFollowItemEdit located in
@@ -116,17 +175,21 @@ class SocialMediaFollowItemModule implements DependencyInterface {
 		$formatted_network_name = ucwords( $network_label );
 		$formatted_title        = sprintf( __( 'Follow on %s', 'et_builder_5' ), $formatted_network_name );
 
-		// Check for custom target attribute that overrides parent's linkTarget.
-		$custom_attributes_data = $attrs['module']['decoration']['attributes'] ?? [];
-		if ( ! empty( $custom_attributes_data ) ) {
-			$separated_attributes = AttributeUtils::separate_attributes_by_target_element( $custom_attributes_data );
-			$main_attributes      = $separated_attributes['main'] ?? [];
+		$icon_link_attributes = self::build_link_attributes(
+			$attrs,
+			$item_url,
+			$target,
+			$formatted_title,
+			'icon'
+		);
 
-			// If a custom target attribute exists, use it to override the parent's linkTarget.
-			if ( isset( $main_attributes['target'] ) ) {
-				$target = esc_attr( $main_attributes['target'] );
-			}
-		}
+		$follow_button_link_attributes = self::build_link_attributes(
+			$attrs,
+			$item_url,
+			$target,
+			$formatted_title,
+			'follow_button'
+		);
 
 		$is_follow_button_enabled = ModuleUtils::has_value(
 			$parent_attrs['socialNetwork']['advanced']['followButton'] ?? [],
@@ -141,13 +204,7 @@ class SocialMediaFollowItemModule implements DependencyInterface {
 			HTMLUtility::render(
 				[
 					'tag'        => 'a',
-					'attributes' => [
-						'class'  => 'follow_button',
-						'href'   => $item_url,
-						'target' => $target,
-						'title'  => $formatted_title,
-						'rel'    => 'noopener',
-					],
+					'attributes' => $follow_button_link_attributes,
 					'children'   => $follow_button_label,
 				]
 			) : null;
@@ -165,13 +222,7 @@ class SocialMediaFollowItemModule implements DependencyInterface {
 		$children = HTMLUtility::render(
 			[
 				'tag'               => 'a',
-				'attributes'        => [
-					'href'   => $item_url,
-					'class'  => 'icon',
-					'target' => $target,
-					'title'  => $formatted_title,
-					'rel'    => 'noopener',
-				],
+				'attributes'        => $icon_link_attributes,
 				'childrenSanitizer' => 'et_core_esc_previously',
 				'children'          => $elements->style_components(
 					[
@@ -515,6 +566,18 @@ class SocialMediaFollowItemModule implements DependencyInterface {
 		$base_order_class = $args['baseOrderClass'] ?? '';
 		$selector_prefix  = $args['selectorPrefix'] ?? '';
 
+		$button_affecting_attrs = 'module' === $style_group
+			? [
+				'spacing' => array_replace_recursive(
+					$default_printed_style_attrs['button']['decoration']['spacing'] ?? [],
+					isset( $elements->preset_printed_style_attrs ) && is_array( $elements->preset_printed_style_attrs ) ? ( $elements->preset_printed_style_attrs['button']['decoration']['spacing'] ?? [] ) : [],
+					$attrs['button']['decoration']['spacing'] ?? []
+				),
+			]
+			: [
+				'spacing' => $attrs['button']['decoration']['spacing'] ?? [],
+			];
+
 		// Icon size inheritance: merge parent icon size attributes with child attributes.
 		// This properly inherits parent icon size attributes and merges them with child attributes.
 		$icon_size_attr        = ArrayUtility::get_value( $attrs, 'icon.advanced.size', [] );
@@ -711,7 +774,13 @@ class SocialMediaFollowItemModule implements DependencyInterface {
 					// Button.
 					$elements->style(
 						[
-							'attrName' => 'button',
+							'attrName'   => 'button',
+							'styleProps' => [
+								'button' => [
+									'affectingAttrs' => $button_affecting_attrs,
+								],
+							],
+							'isMergeRecursiveProps' => true,
 						]
 					),
 

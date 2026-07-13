@@ -46,6 +46,17 @@ class GalleryController extends RESTController {
 
 		$attachments = GalleryModule::get_gallery_items( $args, [] );
 
+		$attachments = array_map(
+			static function ( $attachment ) {
+				if ( isset( $attachment->post_excerpt ) && is_string( $attachment->post_excerpt ) ) {
+					$attachment->post_excerpt = GalleryModule::sanitize_attachment_excerpt( $attachment->post_excerpt );
+				}
+
+				return $attachment;
+			},
+			$attachments
+		);
+
 		$response = [
 			'attachments' => $attachments,
 		];

@@ -1,4 +1,5 @@
 <?php
+
 /**
  * Generate Dynamic Assets.
  *
@@ -12,7 +13,7 @@
 
 namespace ET\Builder\FrontEnd\Assets;
 
-if ( ! defined( 'ABSPATH' ) ) {
+if (! defined('ABSPATH')) {
 	exit; // Exit if accessed directly.
 }
 
@@ -161,9 +162,9 @@ class DynamicAssets implements DependencyInterface {
 			$feature_state
 		);
 
-		$this->_cache              = new DynamicAssetsCache( $this->_store );
-		$this->_dependency_checker = new DynamicAssetsDependencyChecker( $cache_state );
-		$this->_content            = new DynamicAssetsContent( $cache_state, $feature_state );
+		$this->_cache              = new DynamicAssetsCache($this->_store);
+		$this->_dependency_checker = new DynamicAssetsDependencyChecker($cache_state);
+		$this->_content            = new DynamicAssetsContent($cache_state, $feature_state);
 		$this->_detection          = new DynamicAssetsDetection(
 			$cache_state,
 			$detection_state,
@@ -205,37 +206,37 @@ class DynamicAssets implements DependencyInterface {
 
 		DynamicAssetsUtils::ensure_cache_directory_exists();
 
-		add_action( 'wp', [ $this, 'pre_initial_setup' ], 0 );
-		add_action( 'wp', [ $this, 'initial_setup' ], 999 );
+		add_action('wp', [$this, 'pre_initial_setup'], 0);
+		add_action('wp', [$this, 'initial_setup'], 999);
 
 		// Enqueue early assets.
-		add_action( 'wp_enqueue_scripts', [ $this->_enqueue, 'enqueue_dynamic_assets' ] );
-		add_action( 'wp_enqueue_scripts', [ $this->_enqueue, 'enqueue_dynamic_scripts_early' ] );
+		add_action('wp_enqueue_scripts', [$this->_enqueue, 'enqueue_dynamic_assets']);
+		add_action('wp_enqueue_scripts', [$this->_enqueue, 'enqueue_dynamic_scripts_early']);
 
 		// If this is the Divi theme, add the divi filter to the global assets list.
-		if ( 'divi' === $shortname ) {
-			add_filter( 'divi_frontend_assets_dynamic_assets_global_assets_list', [ $this->_list_builder, 'divi_get_global_assets_list' ] );
+		if ('divi' === $shortname) {
+			add_filter('divi_frontend_assets_dynamic_assets_global_assets_list', [$this->_list_builder, 'divi_get_global_assets_list']);
 		}
 
 		// Detect Module/Block use.
-		add_filter( 'render_block_data', [ $this->_detection, 'log_block_used' ], 99, 3 );
-		add_filter( 'pre_do_shortcode_tag', [ $this->_detection, 'log_shortcode_used' ], 99, 4 );
+		add_filter('render_block_data', [$this->_detection, 'log_block_used'], 99, 3);
+		add_filter('pre_do_shortcode_tag', [$this->_detection, 'log_shortcode_used'], 99, 4);
 
 		// Track when main content rendering completes.
-		add_filter( 'the_content', [ $this, 'mark_main_content_complete' ], 999999 );
+		add_filter('the_content', [$this, 'mark_main_content_complete'], 999999);
 
 		// Enqueue scripts and generate assets if late blocks or attributes are detected.
-		add_action( 'wp_footer', [ $this, 'process_late_detection_and_output' ] );
-		add_action( 'wp_footer', [ $this->_enqueue, 'enqueue_dynamic_scripts_late' ] );
+		add_action('wp_footer', [$this, 'process_late_detection_and_output']);
+		add_action('wp_footer', [$this->_enqueue, 'enqueue_dynamic_scripts_late']);
 
 		// Add script that loads fallback .css during blog module ajax pagination.
-		add_action( 'wp_footer', [ $this->_enqueue, 'maybe_inject_fallback_dynamic_assets' ] );
+		add_action('wp_footer', [$this->_enqueue, 'maybe_inject_fallback_dynamic_assets']);
 		// If a late file was generated, we grab it in the footer and then inject it into the header.
-		add_action( 'divi_frontend_assets_dynamic_assets_utils_late_assets_generated', [ $this->_enqueue, 'maybe_inject_late_dynamic_assets' ], 0 );
+		add_action('divi_frontend_assets_dynamic_assets_utils_late_assets_generated', [$this->_enqueue, 'maybe_inject_late_dynamic_assets'], 0);
 
 		// Prepare list of modules based on assets list.
 		self::_setup_verified_modules();
-		add_action( 'et_builder_ready', [ $this, 'late_setup_verified_modules' ] );
+		add_action('et_builder_ready', [$this, 'late_setup_verified_modules']);
 
 		// Save the instance.
 		self::$_instance = $this;
@@ -266,7 +267,7 @@ class DynamicAssets implements DependencyInterface {
 			$additional_valid_names
 		);
 
-		$this->_store->detection()->verified_blocks = array_unique( array_merge( DynamicAssetsUtils::get_divi_block_names(), $additional_valid_names ) );
+		$this->_store->detection()->verified_blocks = array_unique(array_merge(DynamicAssetsUtils::get_divi_block_names(), $additional_valid_names));
 
 		// Value for the filter.
 		$additional_valid_shortcodes = [
@@ -289,7 +290,7 @@ class DynamicAssets implements DependencyInterface {
 			$additional_valid_shortcodes
 		);
 
-		$this->_store->detection()->verified_shortcodes = array_unique( array_merge( DynamicAssetsUtils::get_divi_shortcode_slugs(), $additional_valid_shortcodes ) );
+		$this->_store->detection()->verified_shortcodes = array_unique(array_merge(DynamicAssetsUtils::get_divi_shortcode_slugs(), $additional_valid_shortcodes));
 
 		// Value for the filter.
 		$interested_attrs_and_values = [
@@ -347,7 +348,7 @@ class DynamicAssets implements DependencyInterface {
 	 */
 	public function late_setup_verified_modules() {
 		$third_party_modules      = \ET_Builder_Element::get_third_party_modules();
-		$third_party_module_slugs = array_keys( $third_party_modules );
+		$third_party_module_slugs = array_keys($third_party_modules);
 
 		$this->_store->detection()->verified_shortcodes = array_merge(
 			$this->_store->detection()->verified_shortcodes,
@@ -374,24 +375,24 @@ class DynamicAssets implements DependencyInterface {
 		// These are separate HTTP requests that don't need feature detection.
 		// Use DynamicAssetsUtils::is_dynamic_front_end_request() which already has
 		// comprehensive checks for valid frontend requests.
-		if ( ! DynamicAssetsUtils::is_dynamic_front_end_request() ) {
+		if (! DynamicAssetsUtils::is_dynamic_front_end_request()) {
 			return;
 		}
 
 		$content_retriever = ET_Builder_Content_Retriever::init();
 		$current_post_id   = is_singular() && $post ? $post->ID : DynamicAssetsUtils::get_current_post_id();
-		$current_post      = get_post( $current_post_id );
+		$current_post      = get_post($current_post_id);
 
 		// Set post ID early so metadata methods work.
-		$this->_store->cache()->post_id = ! empty( $current_post ) ? intval( $current_post_id ) : - 1;
+		$this->_store->cache()->post_id = ! empty($current_post) ? intval($current_post_id) : -1;
 
 		// Set object_id and folder_name early so cache lookup works for non-singular pages.
 		// For non-singular pages (taxonomy, author, date archives, etc.), cache uses folder_name as the key.
-		if ( is_singular() && $post ) {
+		if (is_singular() && $post) {
 			$this->_store->cache()->object_id = $post->ID;
-		} elseif ( is_search() || DynamicAssetsUtils::is_virtual_page() ) {
+		} elseif (is_search() || DynamicAssetsUtils::is_virtual_page()) {
 			// Search and virtual pages use -1 as object_id.
-			$this->_store->cache()->object_id = - 1;
+			$this->_store->cache()->object_id = -1;
 		} else {
 			// For all other non-singular pages (taxonomy, author, date archives, post type archives, etc.),
 			// use get_queried_object_id() which returns term_id for taxonomy, author ID for author pages,
@@ -404,8 +405,8 @@ class DynamicAssets implements DependencyInterface {
 
 		// SIMPLIFICATION: Load cached features early if cache exists.
 		// This allows script enqueuing to use cached data without running detection.
-		if ( empty( $this->_store->detection()->early_attributes ) && $this->_cache->metadata_exists( '_divi_dynamic_assets_cached_feature_used' ) ) {
-			$this->_store->detection()->early_attributes            = $this->_cache->metadata_get( '_divi_dynamic_assets_cached_feature_used' );
+		if (empty($this->_store->detection()->early_attributes) && $this->_cache->metadata_exists('_divi_dynamic_assets_cached_feature_used')) {
+			$this->_store->detection()->early_attributes            = $this->_cache->metadata_get('_divi_dynamic_assets_cached_feature_used');
 			$this->_store->detection()->early_attributes_from_cache = true;
 		}
 
@@ -413,26 +414,26 @@ class DynamicAssets implements DependencyInterface {
 		$this->_store->cache()->original_post_content = $current_post ? $current_post->post_content : '';
 
 		// Set some Dynamic Assets class base properties.
-		$_page_content = $content_retriever->get_entire_page_content( $current_post );
-		$_page_content = $this->_content->maybe_add_global_modules_content( $_page_content );
-		$_page_content = $this->_content->maybe_add_library_modules_content( $_page_content );
-		$_page_content = $this->_content->maybe_add_appended_canvas_content( $_page_content, $current_post_id );
-		$this->_content->set_all_content( $_page_content );
+		$_page_content = $content_retriever->get_entire_page_content($current_post);
+		$_page_content = $this->_content->maybe_add_global_modules_content($_page_content);
+		$_page_content = $this->_content->maybe_add_library_modules_content($_page_content);
+		$_page_content = $this->_content->maybe_add_appended_canvas_content($_page_content, $current_post_id);
+		$this->_content->set_all_content($_page_content);
 
 		// When Dynamic Assets are disabled.
-		if ( ! DynamicAssetsUtils::should_initiate_dynamic_assets() ) {
-			$block_names = DetectFeature::get_block_names( $this->_content->get_all_content() );
+		if (! DynamicAssetsUtils::should_initiate_dynamic_assets()) {
+			$block_names = DetectFeature::get_block_names($this->_content->get_all_content());
 
 			// Check whether the content have shortcodes.
-			if ( DetectFeature::get_shortcode_names( $this->_content->get_all_content() ) ) {
+			if (DetectFeature::get_shortcode_names($this->_content->get_all_content())) {
 				// Add filters to get rid of random p tags.
-				add_filter( 'the_content', [ HTMLUtility::class, 'fix_builder_shortcodes' ] );
-				add_filter( 'et_builder_render_layout', [ HTMLUtility::class, 'fix_builder_shortcodes' ] );
-				add_filter( 'the_content', 'et_pb_the_content_prep_code_module_for_wpautop', 0 );
-				add_filter( 'et_builder_render_layout', 'et_pb_the_content_prep_code_module_for_wpautop', 0 );
+				add_filter('the_content', [HTMLUtility::class, 'fix_builder_shortcodes']);
+				add_filter('et_builder_render_layout', [HTMLUtility::class, 'fix_builder_shortcodes']);
+				add_filter('the_content', 'et_pb_the_content_prep_code_module_for_wpautop', 0);
+				add_filter('et_builder_render_layout', 'et_pb_the_content_prep_code_module_for_wpautop', 0);
 
 				// Check if we need to load WooCommerce framework early.
-				$this->maybe_load_early_framework( $this->_content->get_all_content() );
+				$this->maybe_load_early_framework($this->_content->get_all_content());
 			}
 
 			// Bail early.
@@ -440,14 +441,14 @@ class DynamicAssets implements DependencyInterface {
 		}
 
 		// If cached blocks exist, grab them from the post meta.
-		if ( $this->_cache->metadata_exists( '_divi_dynamic_assets_cached_modules' ) ) {
-			$used_modules = $this->_cache->metadata_get( '_divi_dynamic_assets_cached_modules' );
+		if ($this->_cache->metadata_exists('_divi_dynamic_assets_cached_modules')) {
+			$used_modules = $this->_cache->metadata_get('_divi_dynamic_assets_cached_modules');
 
 			$this->_store->detection()->early_blocks     = $used_modules['blocks'] ?? [];
 			$this->_store->detection()->early_shortcodes = $used_modules['shortcodes'] ?? [];
 		} else {
 			// If there are no cached modules, parse the post content to retrieve used blocks.
-			$used_modules = $this->_detection->get_early_modules( $this->_content->get_all_content() );
+			$used_modules = $this->_detection->get_early_modules($this->_content->get_all_content());
 
 			$this->_store->detection()->early_blocks     = $used_modules['blocks'] ?? [];
 			$this->_store->detection()->early_shortcodes = $used_modules['shortcodes'] ?? [];
@@ -462,31 +463,31 @@ class DynamicAssets implements DependencyInterface {
 			);
 		}
 
-		if ( ! empty( $this->_store->detection()->early_shortcodes ) ) {
+		if (! empty($this->_store->detection()->early_shortcodes)) {
 			// Add filters to fix the shortcodes.
-			add_filter( 'the_content', [ HTMLUtility::class, 'fix_builder_shortcodes' ] );
-			add_filter( 'et_builder_render_layout', [ HTMLUtility::class, 'fix_builder_shortcodes' ] );
-			add_filter( 'the_content', 'et_pb_the_content_prep_code_module_for_wpautop', 0 );
-			add_filter( 'et_builder_render_layout', 'et_pb_the_content_prep_code_module_for_wpautop', 0 );
+			add_filter('the_content', [HTMLUtility::class, 'fix_builder_shortcodes']);
+			add_filter('et_builder_render_layout', [HTMLUtility::class, 'fix_builder_shortcodes']);
+			add_filter('the_content', 'et_pb_the_content_prep_code_module_for_wpautop', 0);
+			add_filter('et_builder_render_layout', 'et_pb_the_content_prep_code_module_for_wpautop', 0);
 
 			// Check if we need to load WooCommerce framework early.
-			$this->maybe_load_early_framework( $this->_content->get_all_content() );
+			$this->maybe_load_early_framework($this->_content->get_all_content());
 		}
 
 		// Update _early_modules.
 		$this->_store->detection()->early_modules = $this->_build_early_modules();
 
 		// Track block/shortcode use.
-		$this->_store->detection()->options['has_block']     = ! empty( $this->_store->detection()->early_blocks );
-		$this->_store->detection()->options['has_shortcode'] = ! empty( $this->_store->detection()->early_shortcodes );
+		$this->_store->detection()->options['has_block']     = ! empty($this->_store->detection()->early_blocks);
+		$this->_store->detection()->options['has_shortcode'] = ! empty($this->_store->detection()->early_shortcodes);
 
 		// Cache has_excerpt_content_on early so StaticCSS can use it.
 		// Check cached features first to avoid unnecessary detection when cached.
 		// The result is automatically cached in detection_state->early_attributes by get_cached_or_detect_feature().
 		$this->_detection->get_cached_or_detect_feature(
 			'excerpt_content_on',
-			[ DetectFeature::class, 'has_excerpt_content_on' ],
-			[ $this->_content->get_all_content(), $this->_store->detection()->options ]
+			[DetectFeature::class, 'has_excerpt_content_on'],
+			[$this->_content->get_all_content(), $this->_store->detection()->options]
 		);
 	}
 
@@ -495,7 +496,7 @@ class DynamicAssets implements DependencyInterface {
 	 */
 	public function initial_setup() {
 		// Don't do anything if it's not needed.
-		if ( ! DynamicAssetsUtils::should_initiate_dynamic_assets() ) {
+		if (! DynamicAssetsUtils::should_initiate_dynamic_assets()) {
 			return;
 		}
 
@@ -504,21 +505,21 @@ class DynamicAssets implements DependencyInterface {
 		// object_id and folder_name are already set in pre_initial_setup() for cache lookup.
 
 		// Don't process Dynamic CSS logic if it's not needed or can't be processed.
-		if ( ! $this->is_cachable_request() ) {
+		if (! $this->is_cachable_request()) {
 			return;
 		}
 
-		$this->_set_cache_owner( $shortname );
+		$this->_set_cache_owner($shortname);
 		$this->_initialize_cache_state();
 
 		// Create asset directory, if it does not exist.
 		$ds       = DIRECTORY_SEPARATOR;
 		$file_dir = "{$this->_store->cache()->cache_dir_path}{$ds}{$this->_store->cache()->folder_name}{$ds}";
 
-		et_()->ensure_directory_exists( $file_dir );
+		et_()->ensure_directory_exists($file_dir);
 
 		// If cache exists and files are not stale, skip all detection and generation.
-		if ( $this->_should_skip_generation() ) {
+		if ($this->_should_skip_generation()) {
 			return;
 		}
 
@@ -543,13 +544,13 @@ class DynamicAssets implements DependencyInterface {
 	 * @return array
 	 */
 	public function get_saved_page_blocks(): array {
-		$used_modules = $this->_cache->metadata_get( '_divi_dynamic_assets_cached_modules' );
+		$used_modules = $this->_cache->metadata_get('_divi_dynamic_assets_cached_modules');
 
-		if ( empty( $used_modules ) ) {
+		if (empty($used_modules)) {
 			return [];
 		}
 
-		if ( empty( $used_modules['shortcodes'] ) ) {
+		if (empty($used_modules['shortcodes'])) {
 			return $used_modules['blocks'];
 		}
 
@@ -557,7 +558,7 @@ class DynamicAssets implements DependencyInterface {
 		return array_unique(
 			array_merge(
 				$used_modules['blocks'],
-				array_map( [ DynamicAssetsUtils::class, 'get_block_name_from_shortcode' ], $used_modules['shortcodes'] )
+				array_map([DynamicAssetsUtils::class, 'get_block_name_from_shortcode'], $used_modules['shortcodes'])
 			)
 		);
 	}
@@ -570,21 +571,21 @@ class DynamicAssets implements DependencyInterface {
 	 * @return bool.
 	 */
 	public function is_cachable_request(): bool {
-		if ( is_null( self::$_is_cachable_request ) ) {
+		if (is_null(self::$_is_cachable_request)) {
 			self::$_is_cachable_request = true;
 
 			// Bail if this is not a front-end page request.
-			if ( ! DynamicAssetsUtils::should_generate_dynamic_assets() ) {
+			if (! DynamicAssetsUtils::should_generate_dynamic_assets()) {
 				self::$_is_cachable_request = false;
 			}
 
 			// Bail if Dynamic CSS is disabled.
-			if ( self::$_is_cachable_request && ! DynamicAssetsUtils::use_dynamic_assets() ) {
+			if (self::$_is_cachable_request && ! DynamicAssetsUtils::use_dynamic_assets()) {
 				self::$_is_cachable_request = false;
 			}
 
 			// Bail if the page has no designated cache folder and is not cachable.
-			if ( self::$_is_cachable_request && ! $this->_store->cache()->folder_name ) {
+			if (self::$_is_cachable_request && ! $this->_store->cache()->folder_name) {
 				self::$_is_cachable_request = false;
 			}
 		}
@@ -600,7 +601,7 @@ class DynamicAssets implements DependencyInterface {
 	 * @return void
 	 */
 	public function generate_dynamic_assets() {
-		if ( ! $this->is_cachable_request() ) {
+		if (! $this->is_cachable_request()) {
 			return;
 		}
 
@@ -610,16 +611,16 @@ class DynamicAssets implements DependencyInterface {
 		 *
 		 * @since ??
 		 */
-		do_action( 'divi_frontend_assets_dynamic_assets_before_generate' );
+		do_action('divi_frontend_assets_dynamic_assets_before_generate');
 
 		$split_global_data = [];
 		$atf_blocks        = [];
 
-		if ( $this->_store->detection()->need_late_generation ) {
+		if ($this->_store->detection()->need_late_generation) {
 			$this->_store->detection()->processed_modules = $this->_store->detection()->missed_modules;
-			$global_assets_list                           = DynamicAssetsUtils::get_new_array_values( $this->_list_builder->get_late_global_assets_list(), $this->_store->feature()->early_global_asset_list );
+			$global_assets_list                           = DynamicAssetsUtils::get_new_array_values($this->_list_builder->get_late_global_assets_list(), $this->_store->feature()->early_global_asset_list);
 		} else {
-			$this->_store->feature()->presets_feature_used = $this->_detection->presets_feature_used( $this->_content->get_all_content() );
+			$this->_store->feature()->presets_feature_used = $this->_detection->presets_feature_used($this->_content->get_all_content());
 
 			// Store preset features as early attributes if they exist.
 			$this->_merge_preset_features_to_early_attributes();
@@ -627,9 +628,9 @@ class DynamicAssets implements DependencyInterface {
 			// Run feature detection map during early detection to populate early_attributes.
 			// This ensures all features in the map are detected and cached before get_global_assets_list() runs.
 			$early_content = $this->_content->get_all_content();
-			if ( ! empty( $early_content ) ) {
-				$feature_detection_map = DynamicAssetsUtils::get_feature_detection_map( $this->_store->detection()->options );
-				$this->_detection->process_feature_detection_map_with_cache( $feature_detection_map, $early_content );
+			if (! empty($early_content)) {
+				$feature_detection_map = DynamicAssetsUtils::get_feature_detection_map($this->_store->detection()->options);
+				$this->_detection->process_feature_detection_map_with_cache($feature_detection_map, $early_content);
 			}
 
 			$this->_store->detection()->processed_modules = $this->_store->detection()->early_modules;
@@ -648,7 +649,7 @@ class DynamicAssets implements DependencyInterface {
 			 * @param array  $atf_blocks Above The Fold blocks.
 			 * @param string $content    Theme Builder Content / Post Content.
 			 */
-			$atf_blocks = apply_filters( 'divi_frontend_assets_dynamic_assets_modules_atf', $atf_blocks, $content );
+			$atf_blocks = apply_filters('divi_frontend_assets_dynamic_assets_modules_atf', $atf_blocks, $content);
 
 			// Initial value for the `et_dynamic_assets_content` filter.
 			$split_content = false;
@@ -662,19 +663,19 @@ class DynamicAssets implements DependencyInterface {
 			 *
 			 * @param bool|object $split_content Builder Post Content.
 			 */
-			$split_content = apply_filters( 'divi_frontend_assets_dynamic_assets_content', $split_content );
+			$split_content = apply_filters('divi_frontend_assets_dynamic_assets_content', $split_content);
 
-			if ( 'object' === gettype( $split_content ) ) {
-				$split_global_data = $this->_list_builder->split_global_assets_data( $split_content, $global_assets_list );
+			if ('object' === gettype($split_content)) {
+				$split_global_data = $this->_list_builder->split_global_assets_data($split_content, $global_assets_list);
 			}
 		}
 
 		$block_assets_list = $this->_list_builder->get_block_assets_list();
 
-		if ( empty( $split_global_data ) ) {
-			$this->_generate_unsplit_assets( $global_assets_list, $block_assets_list );
+		if (empty($split_global_data)) {
+			$this->_generate_unsplit_assets($global_assets_list, $block_assets_list);
 		} else {
-			$this->_generate_split_assets( $split_global_data, $global_assets_list, $block_assets_list, $atf_blocks );
+			$this->_generate_split_assets($split_global_data, $global_assets_list, $block_assets_list, $atf_blocks);
 		}
 	}
 
@@ -689,9 +690,9 @@ class DynamicAssets implements DependencyInterface {
 	 * @param string $content The post content.
 	 * @return string Unchanged content.
 	 */
-	public function mark_main_content_complete( string $content ): string {
+	public function mark_main_content_complete(string $content): string {
 		// Only set the flag once (the_content can be called multiple times).
-		if ( ! $this->_store->detection()->early_detection_complete ) {
+		if (! $this->_store->detection()->early_detection_complete) {
 			$this->_store->detection()->early_detection_complete = true;
 		}
 
@@ -705,14 +706,14 @@ class DynamicAssets implements DependencyInterface {
 	 */
 	public function process_late_detection_and_output() {
 		// Skip processing for non-content requests (static files, etc.).
-		if ( ! DynamicAssetsUtils::is_dynamic_front_end_request() ) {
+		if (! DynamicAssetsUtils::is_dynamic_front_end_request()) {
 			return;
 		}
 
 		// SIMPLIFICATION: If cache exists, skip all late detection.
 		// Script enqueuing will use the cached data.
 		// File generation will be skipped by generate_dynamic_assets_files() if files are not stale.
-		if ( $this->_store->detection()->early_attributes_from_cache ) {
+		if ($this->_store->detection()->early_attributes_from_cache) {
 			return;
 		}
 
@@ -722,7 +723,7 @@ class DynamicAssets implements DependencyInterface {
 
 		// Late assets determination.
 		// Note: generate_dynamic_assets_files() already checks if files exist and are not stale.
-		if ( $this->_store->detection()->need_late_generation ) {
+		if ($this->_store->detection()->need_late_generation) {
 			$this->generate_dynamic_assets();
 
 			/**
@@ -730,7 +731,7 @@ class DynamicAssets implements DependencyInterface {
 			 *
 			 * @since 4.10.0
 			 */
-			do_action( 'divi_frontend_assets_dynamic_assets_utils_late_assets_generated' );
+			do_action('divi_frontend_assets_dynamic_assets_utils_late_assets_generated');
 		}
 	}
 
@@ -743,9 +744,9 @@ class DynamicAssets implements DependencyInterface {
 	 *
 	 * @return void
 	 */
-	public function maybe_load_early_framework( string $content = '' ) {
+	public function maybe_load_early_framework(string $content = '') {
 		// Check if we need to load WooCommerce framework early.
-		if ( DetectFeature::has_woocommerce_module_shortcode( $content ) ) {
+		if (DetectFeature::has_woocommerce_module_shortcode($content)) {
 			et_load_woocommerce_framework();
 		}
 	}
@@ -759,12 +760,12 @@ class DynamicAssets implements DependencyInterface {
 	 *
 	 * @return void
 	 */
-	private function _set_cache_owner( string $shortname ): void {
-		if ( 'divi' === $shortname ) {
+	private function _set_cache_owner(string $shortname): void {
+		if ('divi' === $shortname) {
 			$this->_store->cache()->owner = 'divi';
-		} elseif ( 'extra' === $shortname ) {
+		} elseif ('extra' === $shortname) {
 			$this->_store->cache()->owner = 'extra';
-		} elseif ( et_is_builder_plugin_active() ) {
+		} elseif (et_is_builder_plugin_active()) {
 			$this->_store->cache()->owner = 'divi-builder';
 		}
 	}
@@ -785,7 +786,7 @@ class DynamicAssets implements DependencyInterface {
 		$this->_store->cache()->cpt_suffix        = et_builder_should_wrap_styles() && ! et_is_builder_plugin_active() ? '_cpt' : '';
 		$this->_store->cache()->is_rtl            = is_rtl();
 		$this->_store->cache()->rtl_suffix        = $this->_store->cache()->is_rtl ? '_rtl' : '';
-		$this->_store->cache()->page_builder_used = is_singular() && et_pb_is_pagebuilder_used( $this->_store->cache()->post_id );
+		$this->_store->cache()->page_builder_used = is_singular() && et_pb_is_pagebuilder_used($this->_store->cache()->post_id);
 		$this->_store->cache()->tb_prefix         = $this->_store->cache()->tb_template_ids ? '-tb' : '';
 	}
 
@@ -797,14 +798,14 @@ class DynamicAssets implements DependencyInterface {
 	 * @return bool True if generation should be skipped, false otherwise.
 	 */
 	private function _should_skip_generation(): bool {
-		$cache_exists = $this->_cache->metadata_exists( '_divi_dynamic_assets_cached_feature_used' );
-		if ( ! $cache_exists ) {
+		$cache_exists = $this->_cache->metadata_exists('_divi_dynamic_assets_cached_feature_used');
+		if (! $cache_exists) {
 			return false;
 		}
 
 		// Load cached attributes for script enqueuing.
-		if ( empty( $this->_store->detection()->early_attributes ) ) {
-			$this->_store->detection()->early_attributes            = $this->_cache->metadata_get( '_divi_dynamic_assets_cached_feature_used' );
+		if (empty($this->_store->detection()->early_attributes)) {
+			$this->_store->detection()->early_attributes            = $this->_cache->metadata_get('_divi_dynamic_assets_cached_feature_used');
 			$this->_store->detection()->early_attributes_from_cache = true;
 		}
 
@@ -820,18 +821,24 @@ class DynamicAssets implements DependencyInterface {
 	 * @return bool True if non-stale files exist, false otherwise.
 	 */
 	private function _has_non_stale_files(): bool {
-		$files = (array) glob( "{$this->_store->cache()->cache_dir_path}/{$this->_store->cache()->folder_name}/et*-dynamic*{$this->_store->cache()->tb_prefix}*" );
+		$files             = (array) glob("{$this->_store->cache()->cache_dir_path}/{$this->_store->cache()->folder_name}/et*-dynamic*{$this->_store->cache()->tb_prefix}*");
+		$has_dynamic_files = false;
 
-		foreach ( $files as $file ) {
-			if ( str_ends_with( $file, '.stale' ) ) {
+		foreach ($files as $file) {
+			if (str_ends_with($file, '.stale')) {
 				continue;
 			}
-			if ( ! ET_Core_PageResource::is_file_stale( $file ) ) {
-				return true;
+
+			$has_dynamic_files = true;
+
+			// If any matching dynamic file is stale, generation must not be skipped.
+			if (ET_Core_PageResource::is_file_stale($file)) {
+				return false;
 			}
 		}
 
-		return false;
+		// Skip generation only when at least one dynamic file exists and none are stale.
+		return $has_dynamic_files;
 	}
 
 	/**
@@ -844,9 +851,9 @@ class DynamicAssets implements DependencyInterface {
 	 *
 	 * @return void
 	 */
-	private function _generate_unsplit_assets( array $global_assets_list, array $block_assets_list ): void {
-		$assets_data = $this->_list_builder->get_assets_data( array_merge( $global_assets_list, $block_assets_list ) );
-		$this->_cache->generate_dynamic_assets_files( $assets_data );
+	private function _generate_unsplit_assets(array $global_assets_list, array $block_assets_list): void {
+		$assets_data = $this->_list_builder->get_assets_data(array_merge($global_assets_list, $block_assets_list));
+		$this->_cache->generate_dynamic_assets_files($assets_data);
 	}
 
 	/**
@@ -861,17 +868,17 @@ class DynamicAssets implements DependencyInterface {
 	 *
 	 * @return void
 	 */
-	private function _generate_split_assets( array $split_global_data, array $global_assets_list, array $block_assets_list, array $atf_blocks ): void {
-		list( $atf_block_assets_list, $btf_block_assets_list ) = $this->_split_block_assets( $block_assets_list, $atf_blocks );
+	private function _generate_split_assets(array $split_global_data, array $global_assets_list, array $block_assets_list, array $atf_blocks): void {
+		list($atf_block_assets_list, $btf_block_assets_list) = $this->_split_block_assets($block_assets_list, $atf_blocks);
 
-		$atf_assets_data = $this->_list_builder->get_assets_data( array_merge( $split_global_data['atf'], $atf_block_assets_list ) );
+		$atf_assets_data = $this->_list_builder->get_assets_data(array_merge($split_global_data['atf'], $atf_block_assets_list));
 
 		// Reset processed files so get_assets_data returns the correct set for BTF.
 		$this->_store->detection()->processed_files = [];
-		$btf_assets_data                            = $this->_list_builder->get_assets_data( array_merge( $split_global_data['btf'], $btf_block_assets_list ) );
+		$btf_assets_data                            = $this->_list_builder->get_assets_data(array_merge($split_global_data['btf'], $btf_block_assets_list));
 
-		$this->_cache->generate_dynamic_assets_files( $atf_assets_data, 'critical' );
-		$this->_cache->generate_dynamic_assets_files( $btf_assets_data );
+		$this->_cache->generate_dynamic_assets_files($atf_assets_data, 'critical');
+		$this->_cache->generate_dynamic_assets_files($btf_assets_data);
 	}
 
 	/**
@@ -884,18 +891,18 @@ class DynamicAssets implements DependencyInterface {
 	 *
 	 * @return array Tuple of [atf_block_assets_list, btf_block_assets_list].
 	 */
-	private function _split_block_assets( array $block_assets_list, array $atf_blocks ): array {
+	private function _split_block_assets(array $block_assets_list, array $atf_blocks): array {
 		$atf_block_assets_list = [];
 		$btf_block_assets_list = $block_assets_list;
 
-		foreach ( $atf_blocks as $block_name ) {
-			if ( isset( $block_assets_list[ $block_name ] ) ) {
-				$atf_block_assets_list[ $block_name ] = $block_assets_list[ $block_name ];
-				unset( $btf_block_assets_list[ $block_name ] );
+		foreach ($atf_blocks as $block_name) {
+			if (isset($block_assets_list[$block_name])) {
+				$atf_block_assets_list[$block_name] = $block_assets_list[$block_name];
+				unset($btf_block_assets_list[$block_name]);
 			}
 		}
 
-		return [ $atf_block_assets_list, $btf_block_assets_list ];
+		return [$atf_block_assets_list, $btf_block_assets_list];
 	}
 
 	/**
@@ -909,20 +916,20 @@ class DynamicAssets implements DependencyInterface {
 	 * @return void
 	 */
 	private function _merge_preset_features_to_early_attributes(): void {
-		if ( empty( $this->_store->feature()->presets_feature_used ) ) {
+		if (empty($this->_store->feature()->presets_feature_used)) {
 			return;
 		}
 
 		// Initialize _early_attributes as an array if it doesn't exist yet.
-		if ( ! is_array( $this->_store->detection()->early_attributes ) ) {
+		if (! is_array($this->_store->detection()->early_attributes)) {
 			$this->_store->detection()->early_attributes = [];
 		}
 
 		// Merge preset features into _early_attributes (preset features take precedence).
 		// Only merge non-empty values - empty arrays mean "not found in presets" and shouldn't block content detection.
-		$non_empty_preset_features = DynamicAssetsUtils::filter_meaningful_features( $this->_store->feature()->presets_feature_used );
-		if ( ! empty( $non_empty_preset_features ) ) {
-			$this->_store->detection()->early_attributes = array_replace_recursive( $this->_store->detection()->early_attributes, $non_empty_preset_features );
+		$non_empty_preset_features = DynamicAssetsUtils::filter_meaningful_features($this->_store->feature()->presets_feature_used);
+		if (! empty($non_empty_preset_features)) {
+			$this->_store->detection()->early_attributes = array_replace_recursive($this->_store->detection()->early_attributes, $non_empty_preset_features);
 		}
 	}
 
@@ -934,7 +941,7 @@ class DynamicAssets implements DependencyInterface {
 	 * @return array Array of early module names.
 	 */
 	private function _build_early_modules(): array {
-		if ( empty( $this->_store->detection()->early_shortcodes ) ) {
+		if (empty($this->_store->detection()->early_shortcodes)) {
 			return $this->_store->detection()->early_blocks;
 		}
 
@@ -942,7 +949,7 @@ class DynamicAssets implements DependencyInterface {
 		return array_unique(
 			array_merge(
 				$this->_store->detection()->early_blocks,
-				array_map( [ DynamicAssetsUtils::class, 'get_block_name_from_shortcode' ], $this->_store->detection()->early_shortcodes )
+				array_map([DynamicAssetsUtils::class, 'get_block_name_from_shortcode'], $this->_store->detection()->early_shortcodes)
 			)
 		);
 	}
@@ -974,20 +981,20 @@ class DynamicAssets implements DependencyInterface {
 	 *
 	 * @return mixed Cached value or default if not found.
 	 */
-	public function get_cached_feature_detection( string $feature_name, $default_value = false ) {
-		if ( ! is_array( $this->_store->detection()->early_attributes ) || ! isset( $this->_store->detection()->early_attributes[ $feature_name ] ) ) {
+	public function get_cached_feature_detection(string $feature_name, $default_value = false) {
+		if (! is_array($this->_store->detection()->early_attributes) || ! isset($this->_store->detection()->early_attributes[$feature_name])) {
 			return $default_value;
 		}
 
-		$cached_value = $this->_store->detection()->early_attributes[ $feature_name ];
+		$cached_value = $this->_store->detection()->early_attributes[$feature_name];
 
 		// Handle array format (boolean features stored as arrays).
-		if ( is_array( $cached_value ) ) {
-			$filtered = array_filter( $cached_value );
-			if ( ! empty( $filtered ) ) {
+		if (is_array($cached_value)) {
+			$filtered = array_filter($cached_value);
+			if (! empty($filtered)) {
 				// If it's a single boolean value in array, return the boolean.
-				if ( 1 === count( $filtered ) && is_bool( reset( $filtered ) ) ) {
-					return reset( $filtered );
+				if (1 === count($filtered) && is_bool(reset($filtered))) {
+					return reset($filtered);
 				}
 				// Array feature - return the full array.
 				return $cached_value;

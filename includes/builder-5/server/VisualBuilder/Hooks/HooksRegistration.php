@@ -1310,7 +1310,7 @@ class HooksRegistration implements DependencyInterface {
 	 * Output WP auth check HTML for Visual Builder.
 	 *
 	 * Outputs the WordPress authentication check HTML for session expiry handling.
-	 * Replaces the default <button> element with <a> for better styling in Chrome.
+	 * Replaces the default `<button>` element with `<a>` for better styling in Chrome.
 	 *
 	 * @since ??
 	 *

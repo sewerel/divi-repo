@@ -16,6 +16,7 @@ use ET\Builder\Framework\Breakpoint\Breakpoint;
 use ET\Builder\Packages\ModuleUtils\ModuleUtils;
 use ET\Builder\Packages\Module\Options\Background\BackgroundClassnames;
 use ET\Builder\Packages\StyleLibrary\Declarations\Background\Background;
+use ET\Builder\Packages\StyleLibrary\Utils\GradientUtils;
 use ET\Builder\Packages\Module\Options\Background\BackgroundComponentParallaxItemTraits\ComponentTrait as ParallaxItemComponentTrait;
 use ET\Builder\Packages\GlobalData\GlobalData;
 
@@ -170,15 +171,45 @@ trait ComponentTrait {
 								$exist_classnames[ $exist_classname ] = true;
 							}
 
-							$current_gradient_enabled = is_array( $current_gradient ) && array_key_exists( 'enabled', $current_gradient ) ? $current_gradient['enabled'] : null;
-							$larger_gradient_enabled  = is_array( $larger_breakpoint_gradient ) && array_key_exists( 'enabled', $larger_breakpoint_gradient ) ? $larger_breakpoint_gradient['enabled'] : null;
+							$effective_gradient        = GradientUtils::get_effective_gradient_for_breakpoint(
+								[
+									'attr'              => $background_attr,
+									'breakpoint'        => $breakpoint,
+									'state'             => $state,
+									'defaultGradient'   => $background_default_attr['gradient'],
+									'currentGradient'   => is_array( $current_gradient ) ? $current_gradient : [],
+									'gradientSubFields' => [
+										'enabled',
+										'stops',
+										'type',
+										'direction',
+										'directionRadial',
+										'repeat',
+										'overlaysImage',
+										'length',
+									],
+								]
+							);
+							$current_gradient_enabled  = is_array( $current_gradient ) && array_key_exists( 'enabled', $current_gradient ) ? $current_gradient['enabled'] : null;
+							$resolved_gradient_enabled = is_array( $effective_gradient ) && array_key_exists( 'enabled', $effective_gradient ) ? $effective_gradient['enabled'] : null;
 
 							// Check if the gradient is enabled.
+							// This must use resolved gradient settings so gradient variable references
+							// can contribute `enabled`/`overlaysImage` values.
 							$gradient_enabled = ( 'on' === $current_gradient_enabled || true === $current_gradient_enabled )
-							|| ( is_null( $current_gradient_enabled ) && ( 'on' === $larger_gradient_enabled || true === $larger_gradient_enabled ) );
+							|| ( is_null( $current_gradient_enabled ) && ( 'on' === $resolved_gradient_enabled || true === $resolved_gradient_enabled ) );
 
 							// Prepare gradientOverlaysImage to be passed on parallax item component.
-							$gradient_overlays_image = $gradient_enabled && ( 'on' === $current_overlays_image || ( is_null( $current_overlays_image ) && 'on' === $larger_breakpoint_overlays_image ) );
+							$gradient_overlays_image = $gradient_enabled && (
+								'on' === $current_overlays_image
+								|| (
+									is_null( $current_overlays_image )
+									&& (
+										'on' === ( $effective_gradient['overlaysImage'] ?? null )
+										|| 'on' === $larger_breakpoint_overlays_image
+									)
+								)
+							);
 
 							// gradientClassName is empty string on desktop breakpoint + default (`value`) state.
 							$gradient_classname = BackgroundClassnames::get_background_parallax_exist_classnames( $breakpoint, $state, $gradient_overlays_image );
@@ -192,9 +223,7 @@ trait ComponentTrait {
 							$final_blend = ( isset( $current_blend ) && '' !== $current_blend ) ? $current_blend : ( isset( $larger_breakpoint_blend ) && '' !== $larger_breakpoint_blend ? $larger_breakpoint_blend : null );
 							$final_url   = ( isset( $current_url ) && '' !== $current_url ) ? $current_url : ( isset( $larger_breakpoint_url ) && '' !== $larger_breakpoint_url ? $larger_breakpoint_url : null );
 
-							$gradient_to_use = $gradient_enabled
-							? ( is_array( $current_gradient ) ? $current_gradient : ( is_array( $larger_breakpoint_gradient ) ? $larger_breakpoint_gradient : null ) )
-							: null;
+							$gradient_to_use = $gradient_enabled && is_array( $effective_gradient ) ? $effective_gradient : null;
 
 							if (
 							$gradient_overlays_image

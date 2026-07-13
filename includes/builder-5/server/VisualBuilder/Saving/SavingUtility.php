@@ -504,6 +504,7 @@ class SavingUtility {
 			'padding-right',
 			'padding-top',
 			'padding',
+			'paint-order',
 			'page-break-after',
 			'page-break-before',
 			'page-break-inside',
@@ -549,6 +550,7 @@ class SavingUtility {
 			'text-align',
 			'text-decoration-color',
 			'text-decoration-line',
+			'text-decoration-thickness',
 			'text-decoration-style',
 			'text-decoration',
 			'text-emphasis-color',
@@ -561,8 +563,13 @@ class SavingUtility {
 			'text-overflow',
 			'text-rendering',
 			'text-shadow',
+			'text-stroke',
+			'text-stroke-color',
+			'text-stroke-width',
 			'text-transform',
+			'text-underline-offset',
 			'text-underline-position',
+			'text-wrap',
 			'top',
 			'touch-action',
 			'transform-origin',
@@ -2048,7 +2055,29 @@ class SavingUtility {
 			$sanitized[ $key ] = call_user_func( $sanitizer, $page_settings[ $key ] );
 		}
 
+		// Contract-only key from #47743 — not in D4 mapping; must reach save_page_settings().
+		if ( array_key_exists( 'pageGutterWidthIsDefault', $page_settings ) ) {
+			$sanitized['pageGutterWidthIsDefault'] = self::sanitize_page_gutter_width_is_default(
+				$page_settings['pageGutterWidthIsDefault']
+			);
+		}
+
 		return $sanitized;
+	}
+
+	/**
+	 * Sanitize the page gutter width inherited/explicit contract flag.
+	 *
+	 * Visual Builder sends `'0'` / `'1'` strings; normalize to the same for save_page_settings().
+	 *
+	 * @since ??
+	 *
+	 * @param mixed $value Raw contract flag from REST or direct save.
+	 *
+	 * @return string `'1'` when inherited/default, `'0'` when explicit override.
+	 */
+	public static function sanitize_page_gutter_width_is_default( $value ): string {
+		return true === filter_var( $value, FILTER_VALIDATE_BOOLEAN ) ? '1' : '0';
 	}
 
 	/**

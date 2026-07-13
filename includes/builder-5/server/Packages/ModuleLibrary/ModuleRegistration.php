@@ -303,6 +303,29 @@ class ModuleRegistration {
 					]
 				);
 
+				// Get group presets and their render/style attributes before attribute merge.
+				$group_presets = GlobalPreset::get_selected_group_presets(
+					[
+						'moduleName'  => $block->name,
+						'moduleAttrs' => $block_attributes ?? [],
+					]
+				);
+
+				$merged_group_preset_attrs = GlobalPreset::merge_selected_group_presets_by_priority( $group_presets );
+				$group_render_attrs        = $merged_group_preset_attrs['renderAttrs'];
+				$group_style_attrs         = $merged_group_preset_attrs['styleAttrs'];
+
+				// Reference for stripping baked preset duplicates from module attrs (attrs + styleAttrs only).
+				$preset_cleanup_reference  = array_replace_recursive( [], $preset_attrs_raw, $group_style_attrs );
+				$has_module_preset         = ModuleUtils::has_active_module_preset_assignment( $block_attributes['modulePreset'] ?? null );
+				$has_group_preset          = ModuleUtils::has_active_group_preset_assignment( $block_attributes['groupPreset'] ?? null );
+				$should_strip_preset_dupes = ( $has_module_preset || $has_group_preset ) && ! empty( $preset_cleanup_reference );
+
+				// Strip block attributes before preset/default merge so baked import values are not re-injected.
+				if ( $should_strip_preset_dupes && ! empty( $block_attributes ) ) {
+					$block_attributes = ModuleUtils::remove_matching_values( $block_attributes, $preset_cleanup_reference );
+				}
+
 				// Remove preset attributes that are presents in block attributes.
 				if ( $preset_attrs && $block_attributes ) {
 					$preset_attrs = ModuleUtils::remove_matching_attrs( $preset_attrs, $block_attributes );
@@ -314,30 +337,6 @@ class ModuleRegistration {
 				// Replace default attributes with corresponding preset attributes.
 				if ( $default_attributes && $preset_attrs ) {
 					$default_attributes = ModuleUtils::replace_matching_attrs( $default_attributes, $preset_attrs );
-				}
-
-				// Get group presets and their render attributes.
-				$group_presets = GlobalPreset::get_selected_group_presets(
-					[
-						'moduleName'  => $block->name,
-						'moduleAttrs' => $block_attributes ?? [],
-					]
-				);
-
-				$group_render_attrs = [];
-				$group_style_attrs  = [];
-				foreach ( $group_presets as $group_id => $group_preset_item ) {
-					if ( $group_preset_item instanceof GlobalPresetItem ) {
-						$group_render_attrs = array_replace_recursive(
-							$group_render_attrs,
-							$group_preset_item->get_data_render_attrs()
-						);
-
-						$group_style_attrs = array_replace_recursive(
-							$group_style_attrs,
-							$group_preset_item->get_data_style_attrs()
-						);
-					}
 				}
 
 				// Create separate preset printed style attributes instead of merging into default printed style attrs.
@@ -431,7 +430,14 @@ class ModuleRegistration {
 					}
 				}
 
-				$module_attrs = apply_filters( 'divi_module_library_register_module_attrs', $module_attrs, $filter_args );
+				$module_attrs       = apply_filters( 'divi_module_library_register_module_attrs', $module_attrs, $filter_args );
+				$module_style_attrs = $module_attrs;
+
+				// Keep runtime attrs intact for classnames/script data/render decisions, while stripping
+				// preset duplicates only from style attrs to avoid module-level CSS overriding preset CSS.
+				if ( $should_strip_preset_dupes && ! empty( $module_style_attrs ) ) {
+					$module_style_attrs = ModuleUtils::remove_matching_values( $module_style_attrs, $preset_cleanup_reference );
+				}
 
 				$is_disabled_everywhere = ModuleRegistration::_is_disabled_on_all_breakpoints( $module_attrs );
 				$is_interaction_target  = ModuleRegistration::_is_interaction_target( $module_attrs );
@@ -499,7 +505,8 @@ class ModuleRegistration {
 						'stickyParentId'           => $sticky_parent_id,
 						'is_nested_module'         => $is_nested_module,
 						'name'                     => $block->name,
-						'moduleAttrs'              => $module_attrs,
+						'moduleAttrs'              => $module_style_attrs,
+						'runtimeModuleAttrs'       => $module_attrs,
 						'defaultPrintedStyleAttrs' => $default_printed_style_attrs,
 						'presetPrintedStyleAttrs'  => $preset_printed_style_attrs,
 						'hasDefaultBackground'     => $has_default_background,
@@ -954,18 +961,18 @@ class ModuleRegistration {
 	 *
 	 * @since ??
 	 *
-	 * @param WP_Block_Parser_Block $parent The parent block object returned by BlockParserStore::get_parent().
+	 * @param WP_Block_Parser_Block $parent_block The parent block object returned by BlockParserStore::get_parent().
 	 *
 	 * @return array Fully resolved parent attributes:
 	 *              defaults → preset render attrs → raw saved attrs (raw attrs win).
 	 */
-	public static function get_resolved_parent_attrs( $parent ): array {
-		$raw_attrs     = $parent->attrs ?? [];
-		$default_attrs = self::get_default_attrs( $parent->blockName ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Matches WordPress block parser conventions.
+	public static function get_resolved_parent_attrs( $parent_block ): array {
+		$raw_attrs     = $parent_block->attrs ?? [];
+		$default_attrs = self::get_default_attrs( $parent_block->blockName ); // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Matches WordPress block parser conventions.
 
 		$preset_render_attrs = GlobalPreset::get_merged_preset_render_attrs(
 			[
-				'moduleName'  => $parent->blockName, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Matches WordPress block parser conventions.
+				'moduleName'  => $parent_block->blockName, // phpcs:ignore WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- Matches WordPress block parser conventions.
 				'moduleAttrs' => $raw_attrs,
 			]
 		);

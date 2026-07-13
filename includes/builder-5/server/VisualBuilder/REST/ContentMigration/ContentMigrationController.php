@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use ET\Builder\Framework\Controllers\RESTController;
 use ET\Builder\Packages\ModuleLibrary\ModuleRegistration;
+use ET\Builder\Packages\ModuleLibrary\Svg\SvgSanitizer;
 use ET\Builder\VisualBuilder\Saving\SavingUtility;
 use Exception;
 use Error;
@@ -116,6 +117,8 @@ class ContentMigrationController extends RESTController {
 	 * 1. Attribute has `allowHtml: true` in module metadata AND user has `unfiltered_html` capability (e.g., Code Module)
 	 * 2. Attribute has `elementType: 'content'` AND user has `unfiltered_html` capability (e.g., Text Module)
 	 *
+	 * SVG module `svg.innerContent.*.value.code` strings use `SvgSanitizer::sanitize_markup()` (strict SVG allowlist, all roles).
+	 *
 	 * All other content is sanitized using `wp_kses_post()` to strip script tags.
 	 *
 	 * @since ??
@@ -185,7 +188,8 @@ class ContentMigrationController extends RESTController {
 					// Process block attributes to preserve script tags for allowHtml attributes.
 					$block['attrs'] = self::_sanitize_block_attrs_with_allow_html(
 						$block['attrs'],
-						$metadata['attributes']
+						$metadata['attributes'],
+						$block_name
 					);
 				}
 			}
@@ -203,15 +207,18 @@ class ContentMigrationController extends RESTController {
 	 * 1. Attribute has `allowHtml: true` in module metadata AND user has `unfiltered_html` capability (e.g., Code Module)
 	 * 2. Attribute has `elementType: 'content'` AND user has `unfiltered_html` capability (e.g., Text Module)
 	 *
+	 * SVG module `svg.innerContent.*.value.code` strings are sanitized with `SvgSanitizer::sanitize_markup()`.
+	 *
 	 * @since ??
 	 *
-	 * @param array $attrs     Block attributes to sanitize.
-	 * @param array $metadata  Module metadata attributes structure.
-	 * @param array $path      Current attribute path for nested processing.
+	 * @param array  $attrs       Block attributes to sanitize.
+	 * @param array  $metadata    Module metadata attributes structure.
+	 * @param string $block_name  Block name (e.g. `divi/svg`).
+	 * @param array  $path        Current attribute path for nested processing.
 	 *
 	 * @return array Sanitized attributes with script tags preserved for qualifying attributes.
 	 */
-	private static function _sanitize_block_attrs_with_allow_html( array $attrs, array $metadata, array $path = [] ): array {
+	private static function _sanitize_block_attrs_with_allow_html( array $attrs, array $metadata, string $block_name, array $path = [] ): array {
 		$sanitized_attrs = [];
 
 		foreach ( $attrs as $key => $value ) {
@@ -219,7 +226,7 @@ class ContentMigrationController extends RESTController {
 
 			if ( is_array( $value ) ) {
 				// Recursively process nested arrays.
-				$sanitized_attrs[ $key ] = self::_sanitize_block_attrs_with_allow_html( $value, $metadata, $current_path );
+				$sanitized_attrs[ $key ] = self::_sanitize_block_attrs_with_allow_html( $value, $metadata, $block_name, $current_path );
 			} elseif ( is_string( $value ) ) {
 				// Extract base attribute name from path (e.g., 'content.innerContent.desktop.value' → 'content').
 				$base_attr_name = self::_extract_base_attribute_name( $current_path );
@@ -247,6 +254,8 @@ class ContentMigrationController extends RESTController {
 					// Custom CSS free-form must not use wp_kses_post() — it encodes `>` as `&gt;` and breaks selectors
 					// (for example when the client runs content through the `/divi/v1/content-migration` sanitize callback).
 					$sanitized_attrs[ $key ] = SavingUtility::sanitize_css( $value, false, false, true );
+				} elseif ( self::_is_svg_module_code_attr_path( $block_name, $current_path ) ) {
+					$sanitized_attrs[ $key ] = SvgSanitizer::sanitize_markup( $value );
 				} else {
 					// Apply standard sanitization for all other attributes.
 					$sanitized_attrs[ $key ] = wp_kses_post( $value );
@@ -258,6 +267,28 @@ class ContentMigrationController extends RESTController {
 		}
 
 		return $sanitized_attrs;
+	}
+
+	/**
+	 * Whether the attribute path targets SVG module pasted markup (`svg.innerContent.*.value.code`).
+	 *
+	 * @since ??
+	 *
+	 * @param string $block_name Block name (e.g. `divi/svg`).
+	 * @param array  $path       Attribute path array.
+	 *
+	 * @return bool
+	 */
+	private static function _is_svg_module_code_attr_path( string $block_name, array $path ): bool {
+		if ( 'divi/svg' !== $block_name || empty( $path ) || 'svg' !== $path[0] ) {
+			return false;
+		}
+
+		if ( 'code' !== end( $path ) ) {
+			return false;
+		}
+
+		return in_array( 'innerContent', $path, true );
 	}
 
 	/**

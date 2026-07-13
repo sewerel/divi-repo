@@ -34,6 +34,7 @@ use ET\Builder\Packages\ModuleLibrary\ModuleRegistration;
 use ET\Builder\Packages\ModuleUtils\ChildrenUtils;
 use ET\Builder\Packages\ModuleUtils\ModuleUtils;
 use ET\Builder\Packages\ModuleUtils\ImageUtils;
+use ET\Builder\Packages\GlobalData\GlobalPreset;
 use ET\Builder\Packages\StyleLibrary\Utils\StyleDeclarations;
 use ET\Builder\Packages\StyleLibrary\Declarations\Declarations;
 use WP_Query;
@@ -182,6 +183,53 @@ class BlogModule implements DependencyInterface {
 	}
 
 	/**
+	 * Resolve effective Blog grid layout attrs for module and script output.
+	 *
+	 * This merges default printed layout attrs, selected preset layout attrs, and
+	 * module-level layout attrs so FE layout rendering matches VB behavior.
+	 *
+	 * @since ??
+	 *
+	 * @param array  $attrs                       Module attrs.
+	 * @param string $module_name                 Module name.
+	 * @param array  $default_printed_style_attrs Default printed style attrs.
+	 *
+	 * @return array
+	 */
+	private static function get_resolved_blog_grid_layout_attr(
+		array $attrs,
+		string $module_name = 'divi/blog',
+		array $default_printed_style_attrs = []
+	): array {
+		$module_layout_attr = $attrs['blogGrid']['decoration']['layout'] ?? [];
+		$preset_layout_attr = [];
+		$selected_preset    = GlobalPreset::get_selected_preset(
+			[
+				'moduleName'  => $module_name,
+				'moduleAttrs' => $attrs,
+			]
+		);
+
+		if (
+			is_object( $selected_preset )
+			&& method_exists( $selected_preset, 'has_data_attrs' )
+			&& method_exists( $selected_preset, 'get_data_attrs' )
+			&& $selected_preset->has_data_attrs()
+		) {
+			$preset_attrs       = $selected_preset->get_data_attrs();
+			$preset_layout_attr = $preset_attrs['blogGrid']['decoration']['layout'] ?? [];
+		}
+
+		return ModuleUtils::merge_attrs(
+			[
+				'defaultAttrs' => $default_printed_style_attrs['blogGrid']['decoration']['layout'] ?? [],
+				'presetAttrs'  => $preset_layout_attr,
+				'attrs'        => $module_layout_attr,
+			]
+		);
+	}
+
+	/**
 	 * Blog Module's style components.
 	 *
 	 * This function is equivalent of JS function ModuleStyles located in
@@ -208,16 +256,24 @@ class BlogModule implements DependencyInterface {
 	 * }
 	 */
 	public static function module_styles( array $args ): void {
-		$attrs                     = $args['attrs'] ?? [];
-		$elements                  = $args['elements'];
-		$settings                  = $args['settings'] ?? [];
-		$order_class               = $args['orderClass'] ?? '';
-		$is_inside_sticky_module   = $elements->get_is_inside_sticky_module();
-		$sticky_parent_order_class = $elements->get_sticky_parent_order_class();
-		$pagination_font_attr      = $attrs['pagination']['decoration']['font']['font'] ?? [];
+		$attrs                        = $args['attrs'] ?? [];
+		$elements                     = $args['elements'];
+		$settings                     = $args['settings'] ?? [];
+		$order_class                  = $args['orderClass'] ?? '';
+		$default_printed_style_attrs  = $args['defaultPrintedStyleAttrs'] ?? [];
+		$resolved_blog_grid_layout    = self::get_resolved_blog_grid_layout_attr(
+			$attrs,
+			$args['name'] ?? 'divi/blog',
+			$default_printed_style_attrs
+		);
+		$blog_grid_decoration_attrs   = $attrs['blogGrid']['decoration'] ?? [];
+		$blog_grid_decoration_attrs['layout'] = $resolved_blog_grid_layout;
+		$is_inside_sticky_module      = $elements->get_is_inside_sticky_module();
+		$sticky_parent_order_class    = $elements->get_sticky_parent_order_class();
+		$pagination_font_attr         = $attrs['pagination']['decoration']['font']['font'] ?? [];
 
 		// Determine layout display for conditional border rendering.
-		$layout_display = $attrs['blogGrid']['decoration']['layout']['desktop']['value']['display'] ?? 'grid';
+		$layout_display = $resolved_blog_grid_layout['desktop']['value']['display'] ?? 'grid';
 		$is_grid_layout = 'grid' === $layout_display;
 
 		// Build the border style element based on layout mode.
@@ -335,11 +391,12 @@ class BlogModule implements DependencyInterface {
 						[
 							'attrName'   => 'blogGrid',
 							'styleProps' => [
+								'attrs'          => $blog_grid_decoration_attrs,
 								'advancedStyles' => [
 									[
 										'componentName' => 'divi/common',
 										'props'         => [
-											'attr' => $attrs['blogGrid']['decoration']['layout'] ?? [],
+											'attr' => $resolved_blog_grid_layout,
 											'declarationFunction' => [ self::class, 'blog_grid_item_style_declaration' ],
 											'selectorFunction' => function ( $params ) {
 												return $params['selector'] . ' > .et_flex_column';
@@ -541,13 +598,14 @@ class BlogModule implements DependencyInterface {
 	 */
 	public static function module_script_data( $args ) {
 		// Assign variables.
-		$id             = $args['id'] ?? '';
-		$name           = $args['name'] ?? '';
-		$selector       = $args['selector'] ?? '';
-		$attrs          = $args['attrs'] ?? [];
-		$elements       = $args['elements'];
-		$store_instance = $args['storeInstance'] ?? null;
-		$post_ids       = $args['post_ids'] ?? [];
+		$id                        = $args['id'] ?? '';
+		$name                      = $args['name'] ?? '';
+		$selector                  = $args['selector'] ?? '';
+		$attrs                     = $args['attrs'] ?? [];
+		$elements                  = $args['elements'];
+		$store_instance            = $args['storeInstance'] ?? null;
+		$post_ids                  = $args['post_ids'] ?? [];
+		$resolved_blog_grid_layout = self::get_resolved_blog_grid_layout_attr( $attrs, $name );
 
 		// Element Script Data Options.
 		$elements->script_data(
@@ -559,7 +617,13 @@ class BlogModule implements DependencyInterface {
 		// Blog Grid Script Data.
 		$elements->script_data(
 			[
-				'attrName' => 'blogGrid',
+				'attrName'      => 'blogGrid',
+				'attrsResolver' => function ( $blog_grid_attrs ) use ( $resolved_blog_grid_layout ) {
+					$resolved_blog_grid_attrs           = $blog_grid_attrs;
+					$resolved_blog_grid_attrs['layout'] = $resolved_blog_grid_layout;
+
+					return $resolved_blog_grid_attrs;
+				},
 			]
 		);
 

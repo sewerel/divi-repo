@@ -242,8 +242,14 @@ class BreadcrumbsModule implements DependencyInterface {
 		];
 		$context = self::_parse_breadcrumb_context( $context );
 
-		if ( self::_is_home_request( $context['request_type'] ) ) {
+		if ( self::_is_home_request( $context['request_type'], $context ) ) {
 			return $items;
+		}
+
+		$posts_page_items = self::_get_posts_page_index_items( $items, $context );
+
+		if ( null !== $posts_page_items ) {
+			return $posts_page_items;
 		}
 
 		$archive_items = self::_get_archive_preview_items( $items, $context );
@@ -329,16 +335,82 @@ class BreadcrumbsModule implements DependencyInterface {
 	}
 
 	/**
+	 * Determines whether the current request is the posts page index (not the site front page).
+	 *
+	 * @since ??
+	 *
+	 * @return bool
+	 */
+	private static function _is_posts_page_index(): bool {
+		$page_for_posts = (int) get_option( 'page_for_posts' );
+
+		return $page_for_posts > 0 && is_home() && ! is_front_page();
+	}
+
+	/**
 	 * Determines whether the current request should only show the home item.
 	 *
 	 * @since ??
 	 *
 	 * @param string $request_type Request type.
+	 * @param array  $context      Parsed breadcrumb context.
 	 *
 	 * @return bool
 	 */
-	private static function _is_home_request( string $request_type ): bool {
+	private static function _is_home_request( string $request_type, array $context = [] ): bool {
+		if ( self::_is_posts_page_index() ) {
+			return false;
+		}
+
+		$page_for_posts = (int) get_option( 'page_for_posts' );
+
+		if ( $page_for_posts > 0 && 'home' === $request_type && '' !== $context['page_title'] ) {
+			$posts_page_title = get_the_title( $page_for_posts );
+
+			if ( $posts_page_title === $context['page_title'] ) {
+				return false;
+			}
+		}
+
 		return 'home' === $request_type || is_front_page() || is_home();
+	}
+
+	/**
+	 * Builds breadcrumb items for the WordPress posts page index.
+	 *
+	 * @since ??
+	 *
+	 * @param array<int, array{label:string,url:string,isCurrent:bool}>                            $items   Seed breadcrumb items.
+	 * @param array{request_type:string,page_id:int,page_title:string,term_id:int,taxonomy:string} $context Parsed breadcrumb context.
+	 *
+	 * @return array<int, array{label:string,url:string,isCurrent:bool}>|null
+	 */
+	private static function _get_posts_page_index_items( array $items, array $context ): ?array {
+		$page_for_posts = (int) get_option( 'page_for_posts' );
+
+		if ( 0 >= $page_for_posts ) {
+			return null;
+		}
+
+		$is_posts_page_index = self::_is_posts_page_index();
+
+		if ( ! $is_posts_page_index ) {
+			$posts_page_title = get_the_title( $page_for_posts );
+
+			if ( 'home' !== $context['request_type'] || $posts_page_title !== $context['page_title'] ) {
+				return null;
+			}
+		}
+
+		$title = '' !== $context['page_title'] ? $context['page_title'] : get_the_title( $page_for_posts );
+
+		if ( '' === $title ) {
+			return null;
+		}
+
+		$items[] = self::_create_breadcrumb_item( $title, '', true );
+
+		return $items;
 	}
 
 	/**

@@ -27,6 +27,7 @@ use ET\Builder\Packages\Module\Options\Text\TextClassnames;
 use ET\Builder\Packages\ModuleLibrary\ModuleRegistration;
 use ET\Builder\Packages\ModuleUtils\ChildrenUtils;
 use ET\Builder\Packages\ModuleUtils\ModuleUtils;
+use ET\Builder\Framework\Utility\HTMLUtility;
 use ET\Builder\Packages\StyleLibrary\Declarations\Button\Button as ButtonDeclaration;
 use ET\Builder\Packages\StyleLibrary\Utils\StyleDeclarations;
 use Exception;
@@ -135,7 +136,7 @@ class ButtonModule implements DependencyInterface {
 		$wrapper_prefix            = $layout_type_to_prefix_map[ $layout_type ] ?? '';
 
 		// Module wrapper's specific classnames.
-		$link_value = $attrs['button']['innerContent']['desktop']['value']['linkUrl'] ?? '';
+		$link_value = HTMLUtility::resolve_url_shortcodes( $attrs['button']['innerContent']['desktop']['value']['linkUrl'] ?? '' );
 		$text_value = $attrs['button']['innerContent']['desktop']['value']['text'] ?? $link_value;
 
 		$classnames_instance->add( 'et_pb_module' );
@@ -275,7 +276,7 @@ class ButtonModule implements DependencyInterface {
 	 * ```
 	 */
 	public static function render_callback( array $attrs, string $child_modules_content, WP_Block $block, ModuleElements $elements, array $default_printed_style_attrs ): string {
-		$link_value = $attrs['button']['innerContent']['desktop']['value']['linkUrl'] ?? '';
+		$link_value = HTMLUtility::resolve_url_shortcodes( $attrs['button']['innerContent']['desktop']['value']['linkUrl'] ?? '' );
 		$text_value = $attrs['button']['innerContent']['desktop']['value']['text'] ?? '';
 
 		if ( $text_value ) {
@@ -697,14 +698,21 @@ class ButtonModule implements DependencyInterface {
 		$module_element_attrs = $attrs['module']['decoration'] ?? [];
 		$button_element_attrs = self::_sanitize_button_decoration_attrs( $attrs['button']['decoration'] ?? [], $elements );
 
+		$preset_printed_module_spacing = isset( $elements->preset_printed_style_attrs ) && is_array( $elements->preset_printed_style_attrs )
+			? ( $elements->preset_printed_style_attrs['module']['decoration']['spacing'] ?? [] )
+			: [];
+
 		$button_affecting_attrs = 'module' === $style_group ? [
 			'spacing' => array_replace_recursive(
 				$default_printed_style_attrs['module']['decoration']['spacing'] ?? [],
-				isset( $elements->preset_printed_style_attrs ) && is_array( $elements->preset_printed_style_attrs ) ? ( $elements->preset_printed_style_attrs['module']['decoration']['spacing'] ?? [] ) : [],
+				$preset_printed_module_spacing,
 				$attrs['module']['decoration']['spacing'] ?? []
 			),
 		] : [
-			'spacing' => $module_element_attrs['spacing'] ?? [],
+			'spacing' => array_replace_recursive(
+				$preset_printed_module_spacing,
+				$module_element_attrs['spacing'] ?? []
+			),
 		];
 
 		Style::add(

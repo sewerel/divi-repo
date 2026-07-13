@@ -15,6 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 // phpcs:disable WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase,WordPress.NamingConventions.ValidVariableName.UsedPropertyNotSnakeCase -- WP use snakeCase in \WP_Block_Parser_Block
 
 use ET\Builder\Framework\DependencyManagement\Interfaces\DependencyInterface;
+use ET\Builder\Framework\Utility\HTMLUtility;
 use ET\Builder\Framework\Utility\SanitizerUtility;
 use ET\Builder\FrontEnd\BlockParser\BlockParserStore;
 use ET\Builder\FrontEnd\Module\Style;
@@ -81,7 +82,7 @@ class FullwidthImageModule implements DependencyInterface {
 		$classnames_instance = $args['classnamesInstance'];
 		$attrs               = $args['attrs'];
 
-		$url              = $attrs['image']['innerContent']['desktop']['value']['linkUrl'] ?? '';
+		$url              = HTMLUtility::resolve_url_shortcodes( $attrs['image']['innerContent']['desktop']['value']['linkUrl'] ?? '' );
 		$show_in_lightbox = $attrs['image']['advanced']['lightbox']['desktop']['value'] ?? 'off';
 		$use_overlay      = $attrs['image']['advanced']['overlay']['desktop']['value']['use'] ?? 'off';
 		$is_lightbox      = 'on' === $show_in_lightbox;

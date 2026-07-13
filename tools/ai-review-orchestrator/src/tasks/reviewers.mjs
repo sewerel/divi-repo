@@ -42,6 +42,7 @@ export const decideReviewers = task({ name: "decideReviewers" }, async (facts) =
     baseRef: facts.baseRef,
     headRef: facts.headRef,
     relatedPrs: facts.relatedPrs || [],
+    companionContext: facts.companionContext || null,
   });
   let decisionOutput = null;
   try {
@@ -170,6 +171,7 @@ export const runReviewers = task(
         focusedFiles,
         outputContract: outputContract || "",
         relatedPrs: facts.relatedPrs || [],
+        companionContext: facts.companionContext || null,
       });
       const reviewerModel = "inherit" !== reviewer.model ? reviewer.model : facts.model;
       const runCount = resolveReviewerRuns({

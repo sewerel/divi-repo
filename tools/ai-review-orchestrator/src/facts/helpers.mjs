@@ -701,6 +701,163 @@ export const fetchPrByNumber = ({ prNumber, repoSlug }) => {
   ]);
 };
 
+const parseRepoSlugFromApiUrl = (value) => {
+  if (null == value) {
+    return null;
+  }
+  const match = String(value).match(/\/repos\/([^/\s]+\/[^/\s]+)$/);
+  return match ? match[1] : null;
+};
+
+const issueRefKey = (entry) => {
+  if (!entry?.repoSlug || !entry?.issueNumber) {
+    return null;
+  }
+  return `${entry.repoSlug}#${entry.issueNumber}`;
+};
+
+const sourcePriority = {
+  explicit: 4,
+  companion: 3,
+  issue: 2,
+  arg: 1,
+};
+
+const getPrimarySource = (sources = []) =>
+  sources
+    .filter(Boolean)
+    .sort((left, right) => {
+      const leftWeight = sourcePriority[left] || 0;
+      const rightWeight = sourcePriority[right] || 0;
+      return rightWeight - leftWeight;
+    })[0] || null;
+
+const searchPullRequestsByBranch = ({ owner, branchName }) => {
+  if (null == owner || null == branchName) {
+    return [];
+  }
+  const queryScope = [`org:${owner}`, `user:${owner}`];
+  for (const scope of queryScope) {
+    try {
+      const query = [
+        "is:pr",
+        "is:open",
+        "archived:false",
+        `head:${owner}:${branchName}`,
+        scope,
+      ].join(" ");
+      const response = runJson("gh", [
+        "api",
+        "search/issues",
+        "-f",
+        `q=${query}`,
+        "-f",
+        "per_page=100",
+        "-H",
+        "Accept: application/vnd.github+json",
+      ]);
+      const items = Array.isArray(response?.items) ? response.items : [];
+      if (0 < items.length || scope.startsWith("user:")) {
+        return items;
+      }
+    } catch (error) {
+      const reason = error instanceof Error ? error.message : String(error);
+      log(
+        `[pr-compare] warning: companion branch search failed for owner=${owner} scope=${scope}. ${reason}`
+      );
+    }
+  }
+  return [];
+};
+
+const discoverCompanionPrsByIssueAndBranch = ({
+  prMeta,
+  repoSlug,
+  issueRefs = [],
+}) => {
+  const branchName = prMeta?.headRefName || null;
+  if (null == branchName || 0 === issueRefs.length) {
+    return [];
+  }
+  const targetIssueKeys = new Set(
+    issueRefs
+      .map((issueRef) => issueRefKey(issueRef))
+      .filter((issueRefValue) => null !== issueRefValue)
+  );
+  if (0 === targetIssueKeys.size) {
+    return [];
+  }
+  const owners = unique(
+    [repoSlug, ...issueRefs.map((issueRef) => issueRef.repoSlug)]
+      .map((slug) => parseRepoSlug(slug).owner)
+      .filter(Boolean)
+  );
+  const primaryKey = prMeta?.number ? `${repoSlug}#${prMeta.number}` : null;
+  const companions = [];
+  const seen = new Set();
+  owners.forEach((owner) => {
+    const candidates = searchPullRequestsByBranch({ owner, branchName });
+    candidates.forEach((candidate) => {
+      const candidateRepoSlug = parseRepoSlugFromApiUrl(candidate?.repository_url);
+      const candidatePrNumber = Number(candidate?.number);
+      if (!candidateRepoSlug || !Number.isFinite(candidatePrNumber)) {
+        return;
+      }
+      const candidateKey = `${candidateRepoSlug}#${candidatePrNumber}`;
+      if (candidateKey === primaryKey || true === seen.has(candidateKey)) {
+        return;
+      }
+      seen.add(candidateKey);
+      let prDetails = null;
+      try {
+        prDetails = fetchPrByNumber({
+          prNumber: candidatePrNumber,
+          repoSlug: candidateRepoSlug,
+        });
+      } catch (error) {
+        const reason = error instanceof Error ? error.message : String(error);
+        log(
+          `[pr-compare] warning: companion PR metadata lookup failed for ${candidateKey}. ${reason}`
+        );
+        return;
+      }
+      const candidateBranchName = prDetails?.head?.ref || null;
+      if (branchName !== candidateBranchName) {
+        return;
+      }
+      const effectiveRepoSlug =
+        prDetails?.base?.repo?.full_name ||
+        prDetails?.head?.repo?.full_name ||
+        candidateRepoSlug;
+      const candidateIssueRefs = extractIssueRefsFromText({
+        text: prDetails?.body || "",
+        defaultRepoSlug: effectiveRepoSlug,
+      });
+      const matchedIssue = candidateIssueRefs.find((candidateIssueRef) =>
+        targetIssueKeys.has(issueRefKey(candidateIssueRef))
+      );
+      if (!matchedIssue) {
+        return;
+      }
+      companions.push({
+        repoSlug: effectiveRepoSlug,
+        prNumber: Number(prDetails?.number || candidatePrNumber),
+        source: "companion",
+        issue: {
+          repoSlug: matchedIssue.repoSlug,
+          issueNumber: matchedIssue.issueNumber,
+        },
+        companion: {
+          sameIssue: true,
+          sameBranch: true,
+          branchName,
+        },
+      });
+    });
+  });
+  return companions;
+};
+
 const uniquePrRefs = (entries) => {
   const map = new Map();
   entries.forEach((entry) => {
@@ -708,9 +865,38 @@ const uniquePrRefs = (entries) => {
       return;
     }
     const key = `${entry.repoSlug}#${entry.prNumber}`;
+    const sourceList = unique(
+      [...(Array.isArray(entry?.sources) ? entry.sources : []), entry.source].filter(
+        Boolean
+      )
+    );
+    const normalizedEntry = {
+      ...entry,
+      source: getPrimarySource(sourceList) || entry.source || null,
+      sources: sourceList,
+    };
     if (!map.has(key)) {
-      map.set(key, entry);
+      map.set(key, normalizedEntry);
+      return;
     }
+    const existing = map.get(key);
+    const mergedSources = unique(
+      [...(existing?.sources || []), ...(normalizedEntry?.sources || [])].filter(
+        Boolean
+      )
+    );
+    map.set(key, {
+      ...existing,
+      ...normalizedEntry,
+      issue: existing?.issue || normalizedEntry?.issue || null,
+      companion: existing?.companion || normalizedEntry?.companion || null,
+      source:
+        getPrimarySource(mergedSources) ||
+        existing?.source ||
+        normalizedEntry?.source ||
+        null,
+      sources: mergedSources,
+    });
   });
   return Array.from(map.values());
 };
@@ -816,6 +1002,13 @@ export const resolveRelatedPrs = ({
   discover = true,
 }) => {
   const related = [];
+  const issueRefs =
+    true === discover && prMeta?.body
+      ? extractIssueRefsFromText({
+          text: prMeta.body,
+          defaultRepoSlug: repoSlug,
+        })
+      : [];
   const primaryKey = prMeta?.number
     ? `${repoSlug}#${prMeta.number}`
     : null;
@@ -824,11 +1017,7 @@ export const resolveRelatedPrs = ({
       related.push({ ...entry, source: "explicit" });
     }
   });
-  if (true === discover && prMeta?.body) {
-    const issueRefs = extractIssueRefsFromText({
-      text: prMeta.body,
-      defaultRepoSlug: repoSlug,
-    });
+  if (true === discover && 0 < issueRefs.length) {
     issueRefs.forEach((issueRef) => {
       const issue = fetchIssueByNumber({
         issueNumber: issueRef.issueNumber,
@@ -849,6 +1038,14 @@ export const resolveRelatedPrs = ({
         });
       });
     });
+    const companions = discoverCompanionPrsByIssueAndBranch({
+      prMeta,
+      repoSlug,
+      issueRefs,
+    });
+    companions.forEach((entry) => {
+      related.push(entry);
+    });
   }
   const deduped = uniquePrRefs(related).filter((entry) => {
     if (null == primaryKey) {
@@ -857,6 +1054,50 @@ export const resolveRelatedPrs = ({
     return `${entry.repoSlug}#${entry.prNumber}` !== primaryKey;
   });
   return deduped;
+};
+
+export const resolveCompanionContext = ({ prMeta, repoSlug, relatedPrs = [] }) => {
+  const issueRefs = extractIssueRefsFromText({
+    text: prMeta?.body || "",
+    defaultRepoSlug: repoSlug,
+  });
+  const branchName = prMeta?.headRefName || null;
+  const confirmedCompanions = (Array.isArray(relatedPrs) ? relatedPrs : [])
+    .filter(
+      (entry) =>
+        true === entry?.companion?.sameIssue &&
+        true === entry?.companion?.sameBranch
+    )
+    .map((entry) => ({
+      repoSlug: entry.repoSlug,
+      prNumber: entry.prNumber,
+      source: entry.source || null,
+      issue: entry.issue || null,
+      branchName: entry?.companion?.branchName || branchName,
+    }));
+  const canEvaluate = null != branchName && 0 < issueRefs.length;
+  const hasConfirmedCompanion = 0 < confirmedCompanions.length;
+  const status = hasConfirmedCompanion
+    ? "confirmed"
+    : canEvaluate
+      ? "not_confirmed"
+      : "unknown";
+  const reason = hasConfirmedCompanion
+    ? "same_issue_same_branch_companion_detected"
+    : null == branchName
+      ? "missing_branch_context"
+      : 0 === issueRefs.length
+        ? "missing_issue_context"
+        : "companion_not_found";
+  return {
+    status,
+    reason,
+    canEvaluate,
+    branchName,
+    issueRefs,
+    hasConfirmedCompanion,
+    confirmedCompanions,
+  };
 };
 
 export const buildTaskContextFromFiles = ({ repoRoot, taskFiles }) => {

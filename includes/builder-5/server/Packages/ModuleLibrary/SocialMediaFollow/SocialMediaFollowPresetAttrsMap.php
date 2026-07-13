@@ -59,68 +59,47 @@ class SocialMediaFollowPresetAttrsMap {
 				],
 				'subName'  => 'color',
 			],
-			'module.decoration.background__gradient.stops' => [
+			'module.decoration.background__gradient'       => [
 				'attrName' => 'module.decoration.background',
 				'preset'   => [
 					'style',
 					'html',
 				],
-				'subName'  => 'gradient.stops',
+				'subName'  => 'gradient',
 			],
 			'module.decoration.background__gradient.enabled' => [
 				'attrName' => 'module.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.enabled',
 			],
 			'module.decoration.background__gradient.type'  => [
 				'attrName' => 'module.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.type',
 			],
 			'module.decoration.background__gradient.direction' => [
 				'attrName' => 'module.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.direction',
 			],
 			'module.decoration.background__gradient.directionRadial' => [
 				'attrName' => 'module.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.directionRadial',
 			],
 			'module.decoration.background__gradient.repeat' => [
 				'attrName' => 'module.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.repeat',
 			],
 			'module.decoration.background__gradient.length' => [
 				'attrName' => 'module.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.length',
 			],
 			'module.decoration.background__gradient.overlaysImage' => [
 				'attrName' => 'module.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.overlaysImage',
 			],
 			'module.decoration.background__image.url'      => [
@@ -432,7 +411,7 @@ class SocialMediaFollowPresetAttrsMap {
 				'attrName' => 'module.meta.meta.forceVisible',
 				'preset'   => 'meta',
 			],
-			'module.meta.meta.tocListHeading'                => [
+			'module.meta.meta.tocListHeading'              => [
 				'attrName' => 'module.meta.meta.tocListHeading',
 				'preset'   => 'meta',
 			],
@@ -512,68 +491,47 @@ class SocialMediaFollowPresetAttrsMap {
 				],
 				'subName'  => 'color',
 			],
-			'button.decoration.background__gradient.stops' => [
+			'button.decoration.background__gradient'       => [
 				'attrName' => 'button.decoration.background',
 				'preset'   => [
 					'style',
 					'html',
 				],
-				'subName'  => 'gradient.stops',
+				'subName'  => 'gradient',
 			],
 			'button.decoration.background__gradient.enabled' => [
 				'attrName' => 'button.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.enabled',
 			],
 			'button.decoration.background__gradient.type'  => [
 				'attrName' => 'button.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.type',
 			],
 			'button.decoration.background__gradient.direction' => [
 				'attrName' => 'button.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.direction',
 			],
 			'button.decoration.background__gradient.directionRadial' => [
 				'attrName' => 'button.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.directionRadial',
 			],
 			'button.decoration.background__gradient.repeat' => [
 				'attrName' => 'button.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.repeat',
 			],
 			'button.decoration.background__gradient.length' => [
 				'attrName' => 'button.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.length',
 			],
 			'button.decoration.background__gradient.overlaysImage' => [
 				'attrName' => 'button.decoration.background',
-				'preset'   => [
-					'style',
-					'html',
-				],
+				'preset'   => [ 'style', 'html' ],
 				'subName'  => 'gradient.overlaysImage',
 			],
 			'button.decoration.background__image.url'      => [
@@ -1264,6 +1222,62 @@ class SocialMediaFollowPresetAttrsMap {
 				'preset'   => [ 'html' ],
 				'subName'  => 'flexType',
 			],
+			'button.decoration.font.font__weightFineTune'  => [
+				'attrName' => 'button.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'weightFineTune',
+			],
+			'button.decoration.font.font__opticalSizing'   => [
+				'attrName' => 'button.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'opticalSizing',
+			],
+			'button.decoration.font.font__capitalization'  => [
+				'attrName' => 'button.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'capitalization',
+			],
+			'button.decoration.font.font__lineThickness'   => [
+				'attrName' => 'button.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'lineThickness',
+			],
+			'button.decoration.font.font__underlineOffset' => [
+				'attrName' => 'button.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'underlineOffset',
+			],
+			'button.decoration.font.font__textWrap'        => [
+				'attrName' => 'button.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'textWrap',
+			],
+			'button.decoration.font.font__writingMode'     => [
+				'attrName' => 'button.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'writingMode',
+			],
+			'button.decoration.font.font__hyphens'         => [
+				'attrName' => 'button.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'hyphens',
+			],
+			'button.decoration.font.font__columnCount'     => [
+				'attrName' => 'button.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'columnCount',
+			],
+			'button.decoration.font.font__columnGap'       => [
+				'attrName' => 'button.decoration.font.font',
+				'preset'   => [ 'style' ],
+				'subName'  => 'columnGap',
+			],
+			'button.decoration.font.textEffects__strokePosition' => [
+				'attrName' => 'button.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokePosition',
+			],
+
 			'module.decoration.sizing__width'              => [
 				'attrName' => 'module.decoration.sizing',
 				'preset'   => [
@@ -1381,7 +1395,7 @@ class SocialMediaFollowPresetAttrsMap {
 				],
 				'subName'  => 'maxHeight',
 			],
-			'module.decoration.sizing__aspectRatio' => [
+			'module.decoration.sizing__aspectRatio'        => [
 				'attrName' => 'module.decoration.sizing',
 				'preset'   => [
 					'style',
@@ -2240,6 +2254,96 @@ class SocialMediaFollowPresetAttrsMap {
 				'attrName' => 'button.decoration.button',
 				'preset'   => [ 'style' ],
 				'subName'  => 'alignment',
+			],
+			'button.decoration.font.textEffects__fillType' => [
+				'attrName' => 'button.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'fillType',
+			],
+			'button.decoration.font.textEffects__gradient' => [
+				'attrName' => 'button.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient',
+			],
+			'button.decoration.font.textEffects__gradient.type' => [
+				'attrName' => 'button.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.type',
+			],
+			'button.decoration.font.textEffects__gradient.direction' => [
+				'attrName' => 'button.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.direction',
+			],
+			'button.decoration.font.textEffects__gradient.directionRadial' => [
+				'attrName' => 'button.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.directionRadial',
+			],
+			'button.decoration.font.textEffects__gradient.repeat' => [
+				'attrName' => 'button.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.repeat',
+			],
+			'button.decoration.font.textEffects__gradient.length' => [
+				'attrName' => 'button.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'gradient.length',
+			],
+			'button.decoration.font.textEffects__imageFill.blend' => [
+				'attrName' => 'button.decoration.font.textEffects',
+				'preset'   => [ 'style', 'html' ],
+				'subName'  => 'imageFill.blend',
+			],
+			'button.decoration.font.textEffects__imageFill.height' => [
+				'attrName' => 'button.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.height',
+			],
+			'button.decoration.font.textEffects__imageFill.horizontalOffset' => [
+				'attrName' => 'button.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.horizontalOffset',
+			],
+			'button.decoration.font.textEffects__imageFill.position' => [
+				'attrName' => 'button.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.position',
+			],
+			'button.decoration.font.textEffects__imageFill.repeat' => [
+				'attrName' => 'button.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.repeat',
+			],
+			'button.decoration.font.textEffects__imageFill.size' => [
+				'attrName' => 'button.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.size',
+			],
+			'button.decoration.font.textEffects__imageFill.url' => [
+				'attrName' => 'button.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.url',
+			],
+			'button.decoration.font.textEffects__imageFill.verticalOffset' => [
+				'attrName' => 'button.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.verticalOffset',
+			],
+			'button.decoration.font.textEffects__imageFill.width' => [
+				'attrName' => 'button.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'imageFill.width',
+			],
+			'button.decoration.font.textEffects__strokeColor' => [
+				'attrName' => 'button.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokeColor',
+			],
+			'button.decoration.font.textEffects__strokeWidth' => [
+				'attrName' => 'button.decoration.font.textEffects',
+				'preset'   => [ 'style' ],
+				'subName'  => 'strokeWidth',
 			],
 		];
 

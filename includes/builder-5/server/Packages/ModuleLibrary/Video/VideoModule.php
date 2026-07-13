@@ -45,6 +45,28 @@ use ET_Builder_Post_Features;
 class VideoModule implements DependencyInterface {
 
 	/**
+	 * Check whether thumbnail value has a usable source.
+	 *
+	 * @param mixed $value Thumbnail attribute value.
+	 *
+	 * @return bool
+	 */
+	private static function has_thumbnail_src( $value ): bool {
+		return '' !== self::resolve_thumbnail_image_url_string( $value );
+	}
+
+	/**
+	 * Resolve overlay visibility from a thumbnail value.
+	 *
+	 * @param mixed $value Thumbnail attribute value.
+	 *
+	 * @return string
+	 */
+	private static function resolve_overlay_visibility( $value ): string {
+		return self::has_thumbnail_src( $value ) ? 'visible' : 'hidden';
+	}
+
+	/**
 	 * Module classnames function for Video module.
 	 *
 	 * This function is equivalent of JS function moduleClassnames located in
@@ -95,12 +117,19 @@ class VideoModule implements DependencyInterface {
 	 */
 	public static function module_script_data( $args ) {
 		// Assign variables.
-		$id             = $args['id'] ?? '';
-		$name           = $args['name'] ?? '';
-		$selector       = $args['selector'] ?? '';
-		$attrs          = $args['attrs'] ?? [];
-		$elements       = $args['elements'];
-		$store_instance = $args['storeInstance'] ?? null;
+		$id                            = $args['id'] ?? '';
+		$name                          = $args['name'] ?? '';
+		$selector                      = $args['selector'] ?? '';
+		$attrs                         = $args['attrs'] ?? [];
+		$elements                      = $args['elements'];
+		$store_instance                = $args['storeInstance'] ?? null;
+		$thumbnail_attrs               = $attrs['thumbnail']['innerContent'] ?? [];
+		$overlay_background_image_data = MultiViewUtils::merge_values(
+			[
+				'video'     => $attrs['video']['innerContent'] ?? [],
+				'thumbnail' => $thumbnail_attrs,
+			]
+		);
 
 		// Element Script Data Options.
 		$elements->script_data(
@@ -133,12 +162,7 @@ class VideoModule implements DependencyInterface {
 					[
 						'selector'      => $selector . ' .et_pb_video_overlay',
 						'data'          => [
-							'background-image' => MultiViewUtils::merge_values(
-								[
-									'video'     => $attrs['video']['innerContent'] ?? [],
-									'thumbnail' => $attrs['thumbnail']['innerContent'] ?? [],
-								]
-							),
+							'background-image' => $overlay_background_image_data,
 						],
 						'valueResolver' => function ( $value ) {
 							$video               = $value['video'] ?? [];
@@ -146,9 +170,19 @@ class VideoModule implements DependencyInterface {
 							$video_mp4_url       = $video['src'] ?? '';
 							$video_thumbnail_url = self::resolve_thumbnail_image_url_string( $thumbnail );
 							$video_cover_url     = VideoModule::get_video_overlay_cover_image_url( $video_mp4_url, $video_thumbnail_url );
+
 							return 'url(' . ( $video_cover_url ) . ')';
 						},
 						'sanitizer'     => 'et_core_esc_previously',
+					],
+				],
+				'setVisibility' => [
+					[
+						'selector'      => $selector . ' .et_pb_video_overlay',
+						'data'          => $thumbnail_attrs,
+						'valueResolver' => function ( $value ) {
+							return VideoModule::resolve_overlay_visibility( $value );
+						},
 					],
 				],
 			]
@@ -358,11 +392,20 @@ class VideoModule implements DependencyInterface {
 	 * @return string HTML rendered of Video module.
 	 */
 	public static function render_callback( $attrs, $content, $block, $elements, $default_printed_style_attrs ) {
-		$children_ids        = ChildrenUtils::extract_children_ids( $block );
-		$video_mp4_url       = $attrs['video']['innerContent']['desktop']['value']['src'] ?? '';
-		$video_webm_url      = $attrs['video']['innerContent']['desktop']['value']['webm'] ?? '';
-		$thumb_desktop_value = $attrs['thumbnail']['innerContent']['desktop']['value'] ?? [];
-		$video_thumbnail_url = self::resolve_thumbnail_image_url_string( $thumb_desktop_value );
+		$children_ids         = ChildrenUtils::extract_children_ids( $block );
+		$video_mp4_url        = $attrs['video']['innerContent']['desktop']['value']['src'] ?? '';
+		$video_webm_url       = $attrs['video']['innerContent']['desktop']['value']['webm'] ?? '';
+    $thumb_desktop_value  = $attrs['thumbnail']['innerContent']['desktop']['value'] ?? [];
+		$video_thumbnail_url  = self::resolve_thumbnail_image_url_string( $thumb_desktop_value );
+		$thumbnail_attrs= $attrs['thumbnail']['innerContent'] ?? [];
+		$has_video_thumbnail  = ModuleUtils::has_value(
+			$thumbnail_attrs,
+			[
+				'valueResolver' => function ( $value ) {
+					return VideoModule::has_thumbnail_src( $value );
+				},
+			]
+		);
 
 		// Generate Video HTML.
 		$video_params = [
@@ -388,17 +431,29 @@ class VideoModule implements DependencyInterface {
 		// Video Overlay Image Html.
 		$video_cover_url = self::get_video_overlay_cover_image_url( $video_mp4_url, $video_thumbnail_url );
 
+		$video_overlay_classes = HTMLUtility::classnames(
+			[
+				'et_pb_video_overlay'    => true,
+				'et_multi_view_hidden'   => '' === $video_thumbnail_url,
+			]
+		);
+
+		$video_overlay_attrs = [
+			'class' => $video_overlay_classes,
+		];
+
+		if ( '' !== $video_cover_url ) {
+			$video_overlay_attrs['style'] = [
+				'background-image' => "url({$video_cover_url})",
+			];
+		}
+
 		// Generate Video Cover Image Html.
-		$video_cover_image_html = $video_cover_url
+		$video_cover_image_html = $has_video_thumbnail
 			? HTMLUtility::render(
 				[
 					'tag'               => 'div',
-					'attributes'        => [
-						'class' => 'et_pb_video_overlay',
-						'style' => [
-							'background-image' => "url({$video_cover_url})",
-						],
-					],
+					'attributes'        => $video_overlay_attrs,
 					'childrenSanitizer' => 'et_core_esc_previously',
 					'children'          => [
 						HTMLUtility::render(

@@ -75,4 +75,33 @@ class FontStyle {
 
 		return $style_declarations->value();
 	}
+
+	/**
+	 * Generate CSS so list item text descendants inherit Body Text color.
+	 *
+	 * Hyperlinks inside `.et_pb_icon_list_text` otherwise use the theme's global
+	 * anchor color instead of the module's Body Text color on the text wrapper.
+	 *
+	 * @since ??
+	 *
+	 * @param array $params {
+	 *     Parameters for the text color inherit CSS declaration.
+	 *
+	 *     @type array $attrValue Unused; declaration is always emitted.
+	 * }
+	 *
+	 * @return string The CSS for descendant color inheritance.
+	 */
+	public static function text_color_inherit_declaration( array $params ): string { // phpcs:ignore Generic.CodeAnalysis.UnusedFunctionParameter.Found -- Signature matches declarationFunction contract.
+		$style_declarations = new StyleDeclarations(
+			[
+				'returnType' => 'string',
+				'important'  => false,
+			]
+		);
+
+		$style_declarations->add( 'color', 'inherit' );
+
+		return $style_declarations->value();
+	}
 }

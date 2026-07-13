@@ -98,8 +98,8 @@ class BackgroundStyleUtils {
 		switch ( $size ) {
 			case 'custom':
 				// We need to check if the value is 0 with any unit, but we also need to support non integer values such as CSS variables, auto, unset etc.
-				$is_width_auto  = 'auto' === $width || '' === $width || ( strpos( $width, '--' ) === false && preg_match( '/\d/', $width ) && 0 === intval( $width ) );
-				$is_height_auto = 'auto' === $height || '' === $height || ( strpos( $height, '--' ) === false && preg_match( '/\d/', $height ) && 0 === intval( $height ) );
+				$is_width_auto  = 'auto' === $width || '' === $width || ( ! str_contains( $width, '--' ) && preg_match( '/\d/', $width ) && 0 === intval( $width ) );
+				$is_height_auto = 'auto' === $height || '' === $height || ( ! str_contains( $height, '--' ) && preg_match( '/\d/', $height ) && 0 === intval( $height ) );
 				$width_value    = $is_width_auto ? 'auto' : $width;
 				$height_value   = $is_height_auto ? 'auto' : $height;
 
@@ -238,7 +238,8 @@ class BackgroundStyleUtils {
 				break;
 
 			case 'gradient':
-				$is_has_style = count( $attr_value['gradient']['stops'] ?? [] ) > 0;
+				$gradient_stops = $attr_value['gradient']['stops'] ?? [];
+				$is_has_style   = ( is_array( $gradient_stops ) && count( $gradient_stops ) > 0 ) || ( is_string( $gradient_stops ) && '' !== trim( $gradient_stops ) );
 				break;
 
 			case 'image':
@@ -294,5 +295,51 @@ class BackgroundStyleUtils {
 		}
 
 		return false;
+	}
+
+	/**
+	 * Check whether a background value has any actively enabled background type.
+	 *
+	 * Unlike {@see has_background_style()} which detects whether background style output
+	 * would be generated, this method checks whether the user has actively configured
+	 * any background type. It is used to decide whether to suppress module padding via
+	 * the `et_pb_no_bg` class.
+	 *
+	 * Checks performed per type:
+	 * - color   : non-empty color string.
+	 * - gradient: `gradient.enabled === 'on'`.
+	 * - image   : non-empty `image.url` (image has no `enabled` key).
+	 * - video   : non-empty `video.mp4` or `video.webm`.
+	 * - pattern : `pattern.enabled === 'on'`.
+	 * - mask    : `mask.enabled === 'on'`.
+	 *
+	 * @since ??
+	 *
+	 * @param array  $background_value The `desktop.value` slice of the background attribute.
+	 * @param string $default_color    Fallback color used when the `color` key is absent from
+	 *                                 `$background_value`. Allows callers to preserve a module's
+	 *                                 default background when no explicit background attrs exist.
+	 *
+	 * @return bool True when at least one background type is actively configured.
+	 */
+	public static function has_active_background( array $background_value, string $default_color = '' ): bool {
+		if ( ! $background_value ) {
+			return '' !== $default_color;
+		}
+
+		$gradient = $background_value['gradient'] ?? [];
+		$image    = $background_value['image'] ?? [];
+		$video    = $background_value['video'] ?? [];
+		$pattern  = $background_value['pattern'] ?? [];
+		$mask     = $background_value['mask'] ?? [];
+
+		$has_color    = ! empty( $background_value['color'] ?? $default_color );
+		$has_gradient = isset( $gradient['enabled'] ) && 'on' === $gradient['enabled'];
+		$has_image    = '' !== ( $image['url'] ?? '' );
+		$has_video    = '' !== ( $video['mp4'] ?? '' ) || '' !== ( $video['webm'] ?? '' );
+		$has_pattern  = isset( $pattern['enabled'] ) && 'on' === $pattern['enabled'];
+		$has_mask     = isset( $mask['enabled'] ) && 'on' === $mask['enabled'];
+
+		return $has_color || $has_gradient || $has_image || $has_video || $has_pattern || $has_mask;
 	}
 }

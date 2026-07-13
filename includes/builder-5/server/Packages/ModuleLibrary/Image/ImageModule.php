@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use ET\Builder\Framework\Breakpoint\Breakpoint;
 use ET\Builder\Framework\DependencyManagement\Interfaces\DependencyInterface;
+use ET\Builder\Framework\Utility\HTMLUtility;
 use ET\Builder\FrontEnd\BlockParser\BlockParserStore;
 use ET\Builder\FrontEnd\Module\Style;
 use ET\Builder\Packages\IconLibrary\IconFont\Utils as IconFontUtils;
@@ -91,7 +92,7 @@ class ImageModule implements DependencyInterface {
 		$show_bottom_space_tablet = $attrs['module']['advanced']['spacing']['tablet']['value']['showBottomSpace'] ?? null;
 		$show_bottom_space_phone  = $attrs['module']['advanced']['spacing']['phone']['value']['showBottomSpace'] ?? null;
 
-		$url              = $attrs['image']['innerContent']['desktop']['value']['linkUrl'] ?? '';
+		$url              = HTMLUtility::resolve_url_shortcodes( $attrs['image']['innerContent']['desktop']['value']['linkUrl'] ?? '' );
 		$show_in_lightbox = $attrs['image']['advanced']['lightbox']['desktop']['value'] ?? 'off';
 		$use_overlay      = $attrs['image']['advanced']['overlay']['desktop']['value']['use'] ?? 'off';
 		$is_lightbox      = 'on' === $show_in_lightbox;
@@ -237,20 +238,17 @@ class ImageModule implements DependencyInterface {
 	public static function alignment_style_declaration( array $params ): string {
 		$alignment_attr = $params['attrValue'];
 
-		// Use !important on margins to override base theme CSS that sets margin-left/right: unset
-		// on .et_flex_column > .et_pb_image. Without !important, the alignment margins get overridden.
+		// Keep margins non-important so custom spacing margins can override alignment.
+		// Base flex unset rules are handled via selector specificity in module styles.
 		$style_declarations = new StyleDeclarations(
 			[
 				'returnType' => 'string',
-				'important'  => [
-					'margin-left'  => true,
-					'margin-right' => true,
-				],
+				'important'  => false,
 			]
 		);
 
 		// Handle both content alignment (text-align) and module positioning margins.
-		// Margins need !important to override .et_flex_column > .et_pb_image base CSS.
+		// Selector specificity handles base `.et_flex_column > .et_pb_image` unset margins.
 		if ( ! empty( $alignment_attr ) ) {
 			switch ( $alignment_attr ) {
 				case 'left':
@@ -972,6 +970,8 @@ class ImageModule implements DependencyInterface {
 											// proper CSS cascade. Module Alignment will override Image Alignment when width is set.
 											'componentName' => 'divi/common',
 											'props' => [
+												// Scope alignment to image modules for stronger specificity than base flex unset rules.
+												'selector' => "{$args['orderClass']}.et_pb_image",
 												'attr' => $attrs['module']['advanced']['align'] ?? null,
 												'declarationFunction' => [ self::class, 'alignment_style_declaration' ],
 											],

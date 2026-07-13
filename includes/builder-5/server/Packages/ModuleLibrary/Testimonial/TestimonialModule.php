@@ -201,7 +201,7 @@ class TestimonialModule implements DependencyInterface {
 		);
 
 		if ( $company ) {
-			$company_url        = $attrs['company']['innerContent']['desktop']['value']['linkUrl'] ?? '';
+			$company_url        = HTMLUtility::resolve_url_shortcodes( $attrs['company']['innerContent']['desktop']['value']['linkUrl'] ?? '' );
 			$company_url_target = $attrs['company']['innerContent']['desktop']['value']['linkTarget'] ?? '';
 			$company_target     = 'on' === $company_url_target ? '_blank' : '_self';
 			$meta_items[]       = empty( $company_url ) ? $company : $elements->render(

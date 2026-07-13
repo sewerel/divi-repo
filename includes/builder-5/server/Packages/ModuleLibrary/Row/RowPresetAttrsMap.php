@@ -58,10 +58,10 @@ class RowPresetAttrsMap {
 				'preset'   => [ 'style' ],
 				'subName'  => 'color',
 			],
-			'module.decoration.background__gradient.stops' => [
+			'module.decoration.background__gradient' => [
 				'attrName' => 'module.decoration.background',
 				'preset'   => [ 'style', 'html' ],
-				'subName'  => 'gradient.stops',
+				'subName'  => 'gradient',
 			],
 			'module.decoration.background__gradient.enabled' => [
 				'attrName' => 'module.decoration.background',
@@ -420,7 +420,7 @@ class RowPresetAttrsMap {
 				'preset'   => [ 'style' ],
 				'subName'  => 'maxHeight',
 			],
-			'module.decoration.sizing__aspectRatio' => [
+			'module.decoration.sizing__aspectRatio'        => [
 				'attrName' => 'module.decoration.sizing',
 				'preset'   => [
 					'style',
